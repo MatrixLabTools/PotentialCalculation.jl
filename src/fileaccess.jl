@@ -3,7 +3,7 @@ module fileaccess
 export read_h5file, give_radius, give_energy
 
 using HDF5
-using ..clusters, ..atoms
+using ..clusters, ..atoms, ..molecules
 
 
 function convert_to_array(atoms::String)
