@@ -16,7 +16,9 @@ export m_electron, m_u, m_au, proton_mass, masses,
        AbstactCalculationType, Energy, Gradient, AbstractCalculator, Orca,
        Calculator, write_input, read_energy, calculate_energy, clean_calculation_files,
        bsse_corrected_energy,
-       line_sampler, adaptive_line_sampler, sample_multiple_adaptive_lines
+       line_sampler, adaptive_line_sampler, sample_multiple_adaptive_lines,
+       InputAdaptiveSampler,
+       sample_and_calculate
 
 
 include("identical.jl")
@@ -29,6 +31,8 @@ include("fileaccess.jl")
 
 include("calculators.jl")
 include("sample.jl")
+include("distributedcalculate.jl")
+
 
 
 using .atoms
@@ -39,6 +43,8 @@ using .unitconversions
 using .fileaccess
 using .calculators
 using .sample
+using .distributedcalculate
+
 
 
 greet() = print("Hello World!")

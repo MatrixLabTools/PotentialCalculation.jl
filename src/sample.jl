@@ -1,20 +1,11 @@
 module sample
 
-export line_sampler, adaptive_line_sampler, sample_multiple_adaptive_lines
+export line_sampler, adaptive_line_sampler, sample_multiple_adaptive_lines,
+       InputAdaptiveSampler
 
 using LinearAlgebra
 using ..calculators, ..clusters, ..atoms, ..unitconversions
 
-# Energy conversion. TODO make this use uniconv from PotentialFit
-#function energy_conv(e, unit)
-#    if unit in ["cm-1", "cm^-1"]
-#        return e/(27.2113834*8065.54477)
-#    elseif unit in ["ev", "eV"]
-#        return e/27.2113834
-#    else
-#        return e
-#    end
-#end
 
 
 function random_rotation!(c::AbstractCluster)
@@ -93,7 +84,8 @@ Closest distance used in calculations is calculated adaptively.
 - `startdistance` : Distance from which adaptive seach is started
 """
 function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_e=0;
-                               unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0)
+                               unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0,
+                               basename="base")
     @info "Starting adaptive_line_sampler"
     c1 = deepcopy(cl1)
     c2 = deepcopy(cl2)
@@ -110,7 +102,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
         r += sstep
     end
 
-    e = bsse_corrected_energy(cal, [c1], [c2]) .- emax
+    e = bsse_corrected_energy(cal, [c1], [c2], basename=basename) .- emax
     ctemp = [deepcopy(c2)]
     fless = false
     fmore = false
@@ -129,7 +121,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
             move!(c2, sstep*u)
             r += sstep
         end
-        tmp = bsse_corrected_energy(cal, [c1], [c2]) .- emax
+        tmp = bsse_corrected_energy(cal, [c1], [c2], basename=basename) .- emax
         push!(e,  tmp...)
         push!(ctemp, deepcopy(c2))
         if e[end] > 0
@@ -151,7 +143,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
     step = (maxdis - r ) / npoints
     move!(c2,step*u)
     tmp = _line_sampler(c1, c2[1], u, step, npoints-1)
-    et = bsse_corrected_energy(cal, tmp[1], tmp[2])
+    et = bsse_corrected_energy(cal, tmp[1], tmp[2], basename=basename)
     push!(eout, et...)
     push!(out1, tmp[1]...)
     push!(out2, tmp[2]...)
@@ -160,15 +152,37 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
 end
 
 
+mutable struct InputAdaptiveSampler
+    cal
+    cl1
+    cl2
+    nlines
+    max_e
+    unit
+    npoints
+    maxdis
+    sstep
+    startdistance
+    function InputAdaptiveSampler(cal::Calculator, cl1::Cluster, cl2::Cluster,
+                                  nlines, max_e=0;
+                                  unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1,
+                                  startdistance=3.0)
+        new(cal,cl1,cl2,nlines,max_e,unit,npoints,maxdis,sstep,startdistance)
+    end
+end
+
+
 function sample_multiple_adaptive_lines(cal::Calculator, cl1::Cluster, cl2::Cluster, nlines, max_e=0;
-                               unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0)
+                               unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0,
+                               basename="base")
     c1 = deepcopy(cl1)
     c2 = deepcopy(cl2)
     out = Vector{Dict}(undef, nlines)
     rtmp = Float64[]
     sr = startdistance
     for i in 1:nlines
-        tmp = adaptive_line_sampler(cal, c1, c2, max_e; unit=unit, npoints=10, maxdis=9.0, startdistance=sr)
+        tmp = adaptive_line_sampler(cal, c1, c2, max_e; unit=unit, npoints=10,
+                                    maxdis=9.0, startdistance=sr, basename=basename)
         push!(rtmp, tmp["Mindis"])
         sr = sum(rtmp) / length(rtmp)
         out[i] = tmp
@@ -176,5 +190,11 @@ function sample_multiple_adaptive_lines(cal::Calculator, cl1::Cluster, cl2::Clus
     return out
 end
 
+function sample_multiple_adaptive_lines(inputs::InputAdaptiveSampler; basename="base")
+    sample_multiple_adaptive_lines(inputs.cal, inputs.cl1, inputs.cl2,
+                 inputs.nlines, inputs.max_e,
+                 unit=inputs.unit, npoints=inputs.npoints, maxdis=inputs.maxdis,
+                 startdistance=inputs.startdistance, basename=basename)
+end
 
 end  # module sample

@@ -5,8 +5,9 @@ export AbstactCalculationType, Energy, Gradient, AbstractCalculator, Orca,
        bsse_corrected_energy
 
 
-#using XYZtools
+
 using ..clusters
+using Distributed
 
 
 
@@ -114,7 +115,7 @@ function calculate_energy(cal::Calculator, points; basename="base", ghost=undef)
         run(cmd)
         out[i] = read_energy(outname)
         te = time()
-        @info "Calculation done in $(round(te-ts, digits=1)) seconds"
+        @info "Pid $(myid()) : Calculation done in $(round(te-ts, digits=1)) seconds"
     end
     return out
 end
@@ -122,6 +123,7 @@ end
 
 
 function bsse_corrected_energy(cal::Calculator, c1, c2; basename="base")
+    # expects ORCA calculator
     points = c1 .+ c2
     e = calculate_energy(cal, points, basename=basename)
     l1 = length(c1[1])
@@ -133,6 +135,7 @@ end
 
 
 function clean_calculation_files(;dir=".", basename="base")
+    #TODO dir does not do anything atm
     filenames=readdir(dir)
     i = map( x -> occursin(basename, x), filenames)
     rm.(filenames[i])
