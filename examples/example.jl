@@ -1,6 +1,6 @@
 using Distributed
 
-addprocs(2)
+addprocs(8)
 @everywhere using Pkg
 @everywhere Pkg.activate(".")
 @everywhere using PotentialCalculation
@@ -19,6 +19,6 @@ c1=Cluster{AtomOnlySymbol}([-6.7041359778      1.3501192944      0.0102209137;
 #c2 = Cluster{AtomOnlySymbol}([0.0 0.0 0.0; 1.2 0.0 0.0 ], AtomOnlySymbol.(["N", "N"]))
 c2 = Cluster{AtomOnlySymbol}(rand(1,3), AtomOnlySymbol.(["Ar"]))
 
-inp = InputAdaptiveSampler(ca,c1,c2, 1, 5000, startdistance=2.4, npoints=10)
+inp = InputAdaptiveSampler(ca,c1,c2, 2, 5000, startdistance=2.4, npoints=10)
 
-data = sample_ntimes(inp, 2)
+data = sample_ntimes(inp, 8)

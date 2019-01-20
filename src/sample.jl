@@ -85,8 +85,8 @@ Closest distance used in calculations is calculated adaptively.
 """
 function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_e=0;
                                unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0,
-                               basename="base")
-    @info "Starting adaptive_line_sampler"
+                               basename="base", id="")
+    @info "$(id) : Starting adaptive_line_sampler"
     c1 = deepcopy(cl1)
     c2 = deepcopy(cl2)
 
@@ -102,7 +102,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
         r += sstep
     end
 
-    e = bsse_corrected_energy(cal, [c1], [c2], basename=basename) .- emax
+    e = bsse_corrected_energy(cal, [c1], [c2], basename=basename, id=id) .- emax
     ctemp = [deepcopy(c2)]
     fless = false
     fmore = false
@@ -121,7 +121,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
             move!(c2, sstep*u)
             r += sstep
         end
-        tmp = bsse_corrected_energy(cal, [c1], [c2], basename=basename) .- emax
+        tmp = bsse_corrected_energy(cal, [c1], [c2], basename=basename, id=id) .- emax
         push!(e,  tmp...)
         push!(ctemp, deepcopy(c2))
         if e[end] > 0
@@ -133,7 +133,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
     if length(e) == 1
         error("Search fail!")
     end
-    @info "adaptive_line_sampler found initial point in $(length(e)) steps"
+    @info "$(id) : adaptive_line_sampler found initial point in $(length(e)) steps"
     @debug "e $(e)"
     out2 = [ctemp[e.<0][end]]
     eout = [e[e.<0][end] + emax]
@@ -143,7 +143,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
     step = (maxdis - r ) / npoints
     move!(c2,step*u)
     tmp = _line_sampler(c1, c2[1], u, step, npoints-1)
-    et = bsse_corrected_energy(cal, tmp[1], tmp[2], basename=basename)
+    et = bsse_corrected_energy(cal, tmp[1], tmp[2], basename=basename, id=id)
     push!(eout, et...)
     push!(out1, tmp[1]...)
     push!(out2, tmp[2]...)
@@ -174,27 +174,30 @@ end
 
 function sample_multiple_adaptive_lines(cal::Calculator, cl1::Cluster, cl2::Cluster, nlines, max_e=0;
                                unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0,
-                               basename="base")
+                               basename="base", id="")
     c1 = deepcopy(cl1)
     c2 = deepcopy(cl2)
     out = Vector{Dict}(undef, nlines)
     rtmp = Float64[]
     sr = startdistance
     for i in 1:nlines
-        tmp = adaptive_line_sampler(cal, c1, c2, max_e; unit=unit, npoints=10,
-                                    maxdis=9.0, startdistance=sr, basename=basename)
+        tmp = adaptive_line_sampler(cal, c1, c2, max_e; unit=unit, npoints=npoints,
+                                    maxdis=9.0, startdistance=sr, basename=basename, id=id)
         push!(rtmp, tmp["Mindis"])
         sr = sum(rtmp) / length(rtmp)
         out[i] = tmp
     end
-    return out
+    energy = hcat(map( x -> x["Energy"], out)...)
+    points = hcat(map( x -> x["Points"], out)...)
+    mindis = map(x -> x["Mindis"], out)
+    return Dict("Energy" => energy, "Points" => points, "Mindis" => mindis)
 end
 
-function sample_multiple_adaptive_lines(inputs::InputAdaptiveSampler; basename="base")
+function sample_multiple_adaptive_lines(inputs::InputAdaptiveSampler; basename="base", id=id)
     sample_multiple_adaptive_lines(inputs.cal, inputs.cl1, inputs.cl2,
                  inputs.nlines, inputs.max_e,
                  unit=inputs.unit, npoints=inputs.npoints, maxdis=inputs.maxdis,
-                 startdistance=inputs.startdistance, basename=basename)
+                 startdistance=inputs.startdistance, basename=basename, id=id)
 end
 
 end  # module sample

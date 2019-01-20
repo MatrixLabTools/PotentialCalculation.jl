@@ -67,6 +67,8 @@ Base.size(a::AbstractCluster) = size(a.xyz,1)
 
 Base.length(a::AbstractCluster) = size(a)
 
+Base.lastindex(a::AbstractCluster) = length(a)
+
 
 function (+)(c1::T, c2::T) where T <: AbstractClusterWithSymbols
     return T(vcat(c1.xyz,c2.xyz),vcat(c1.atoms,c2.atoms))

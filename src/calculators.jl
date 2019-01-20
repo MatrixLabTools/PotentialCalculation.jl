@@ -7,7 +7,7 @@ export AbstactCalculationType, Energy, Gradient, AbstractCalculator, Orca,
 
 
 using ..clusters
-using Distributed
+#using Distributed
 
 
 
@@ -49,7 +49,7 @@ mutable struct Orca <: AbstractCalculationProgram
     ncore::UInt
     memcore::UInt
     tmp_dir
-    function Orca(;excecutable="/home/teemu/mpiapps/apps/ORCA/4.0.1/orca",
+    function Orca(;excecutable="orca",
                    ncore=1, maxmem=1000, tmp_dir=mktempdir())
         cd(tmp_dir)
         @info "Changed working directory to $(tmp_dir)"
@@ -101,7 +101,7 @@ function read_energy(fname)
 end
 
 
-function calculate_energy(cal::Calculator, points; basename="base", ghost=undef)
+function calculate_energy(cal::Calculator, points; basename="base", ghost=undef, id="")
     clean_calculation_files(basename=basename)
     inname = "$(basename).inp"
     outname= "$(basename).out"
@@ -115,21 +115,21 @@ function calculate_energy(cal::Calculator, points; basename="base", ghost=undef)
         run(cmd)
         out[i] = read_energy(outname)
         te = time()
-        @info "Pid $(myid()) : Calculation done in $(round(te-ts, digits=1)) seconds"
+        @info "$(id) : Calculation done in $(round(te-ts, digits=1)) seconds"
     end
     return out
 end
 
 
 
-function bsse_corrected_energy(cal::Calculator, c1, c2; basename="base")
+function bsse_corrected_energy(cal::Calculator, c1, c2; basename="base", id="")
     # expects ORCA calculator
     points = c1 .+ c2
-    e = calculate_energy(cal, points, basename=basename)
+    e = calculate_energy(cal, points, basename=basename, id=id)
     l1 = length(c1[1])
     l2 = length(c2[1]) + l1
-    bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1)
-    bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2)
+    bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id)
+    bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id)
     return e .- bsse1 .- bsse2
 end
 

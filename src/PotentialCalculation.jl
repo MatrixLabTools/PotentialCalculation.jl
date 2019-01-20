@@ -10,7 +10,8 @@ export m_electron, m_u, m_au, proton_mass, masses,
          rotate_x!, rotate_y!, rotate_z!, print_xyz,
        AbstractIdentical, Identical, areidentical,
 
-       read_h5file, give_radius, give_energy,
+       read_h5file, give_radius, give_energy, save_jld_data, load_jld_data, read_xyz,
+       make_savable_data,
        energy_from, energy_to, change_energy,
 
        AbstactCalculationType, Energy, Gradient, AbstractCalculator, Orca,
@@ -18,7 +19,8 @@ export m_electron, m_u, m_au, proton_mass, masses,
        bsse_corrected_energy,
        line_sampler, adaptive_line_sampler, sample_multiple_adaptive_lines,
        InputAdaptiveSampler,
-       sample_and_calculate
+       sample_and_calculate, sample_ntimes,
+       write_seve_file, load_restart_file, continue_calculation, calculate_with_different_method
 
 
 include("identical.jl")
@@ -33,6 +35,9 @@ include("calculators.jl")
 include("sample.jl")
 include("distributedcalculate.jl")
 
+include("restarttools.jl")
+
+
 
 
 using .atoms
@@ -44,16 +49,10 @@ using .fileaccess
 using .calculators
 using .sample
 using .distributedcalculate
+using .restarttools
 
 
 
-greet() = print("Hello World!")
 
-
-#ca = Calculator("RI-MP2 RIJK", "def2-svp def2-svp/C def2/JK", Orca(), Energy())
-#c1 = Cluster{AtomOnlySymbol}([0.0 0.0 0.0; 1.2 0.0 0.0 ], AtomOnlySymbol.(["N", "N"]))
-#c2 = Cluster{AtomOnlySymbol}(rand(1,3), AtomOnlySymbol.(["Ar"]))
-# log1 = Logging.SimpleLogger(stdout,Logging.Debug)
-# Logging.global_logger(log1)
 
 end # module
