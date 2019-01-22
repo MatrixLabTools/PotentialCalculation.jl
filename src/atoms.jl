@@ -1,6 +1,5 @@
 module atoms
 
-#import .convert
 
 export m_electron, m_u, m_au, proton_mass, masses
 

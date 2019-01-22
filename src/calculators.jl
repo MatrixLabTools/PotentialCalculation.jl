@@ -7,7 +7,7 @@ export AbstactCalculationType, Energy, Gradient, AbstractCalculator, Orca,
 
 
 using ..clusters
-#using Distributed
+
 
 
 
@@ -45,14 +45,18 @@ end
 abstract type AbstractCalculationProgram end
 
 mutable struct Orca <: AbstractCalculationProgram
+    "path for orca excecutable"
     excecutable
+    "number of cores in calculation"
     ncore::UInt
+    "maximum memory per core"
     memcore::UInt
+    "directory where calculation is done"
     tmp_dir
     function Orca(;excecutable="orca",
                    ncore=1, maxmem=1000, tmp_dir=mktempdir())
-        cd(tmp_dir)
-        @info "Changed working directory to $(tmp_dir)"
+        #cd(tmp_dir)
+        #@info "Changed working directory to $(tmp_dir)"
         new(excecutable, ncore, maxmem, tmp_dir)
     end
 end
@@ -135,7 +139,6 @@ end
 
 
 function clean_calculation_files(;dir=".", basename="base")
-    #TODO dir does not do anything atm
     filenames=readdir(dir)
     i = map( x -> occursin(basename, x), filenames)
     rm.(filenames[i])

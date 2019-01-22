@@ -152,16 +152,29 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
 end
 
 
+"""
+Structure used to help use of adaptive line samplers
+"""
 mutable struct InputAdaptiveSampler
+    "Calculator"
     cal
+    "Cluster1"
     cl1
+    "Cluster2"
     cl2
+    "number of lines calculated"
     nlines
+    "maximum energy of configuration"
     max_e
+    "unit for maximum energy"
     unit
+    "number of points in line"
     npoints
+    "maximum distance of clusters"
     maxdis
+    "search step used by adaptive_line_sampler"
     sstep
+    "distance where search is started"
     startdistance
     function InputAdaptiveSampler(cal::Calculator, cl1::Cluster, cl2::Cluster,
                                   nlines, max_e=0;
@@ -193,7 +206,7 @@ function sample_multiple_adaptive_lines(cal::Calculator, cl1::Cluster, cl2::Clus
     return Dict("Energy" => energy, "Points" => points, "Mindis" => mindis)
 end
 
-function sample_multiple_adaptive_lines(inputs::InputAdaptiveSampler; basename="base", id=id)
+function sample_multiple_adaptive_lines(inputs::InputAdaptiveSampler; basename="base", id="")
     sample_multiple_adaptive_lines(inputs.cal, inputs.cl1, inputs.cl2,
                  inputs.nlines, inputs.max_e,
                  unit=inputs.unit, npoints=inputs.npoints, maxdis=inputs.maxdis,

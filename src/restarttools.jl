@@ -1,8 +1,15 @@
 module restarttools
 # methods that use fileaccess and other parts
-export write_save_file, load_restart_file, continue_calculation, calculate_with_different_method
+export write_save_file,
+       load_restart_file,
+       continue_calculation,
+       calculate_with_different_method,
+       load_clusters_and_make_input,
+       load_clusters_and_sample_input,
+       calculate_adaptive_sample_inputs
 
 using ..fileaccess, ..calculators, ..sample, ..distributedcalculate
+using Distributed
 
 
 """
@@ -88,7 +95,7 @@ end
 
 
 """
-continue_calculation(fname, calculator::Calculator; batch_size=16, save_file="")
+    continue_calculation(fname, calculator::Calculator; batch_size=16, save_file="")
 
 With this function you can use already chosen points on to which to do energy calculation
 
@@ -115,5 +122,117 @@ function calculate_with_different_method(fname, calculator::Calculator; batch_si
     end
     return out
 end
+
+
+"""
+load_clusters_and_sample_input(fname_cluster1, cluster2, calculator, nsamples;
+                                      nlines=1, max_e=0, unit="cm-1", npoints=10,
+                                      maxdis=9.0, sstep=0.1, startdistance=2.5)
+
+Loads cluster1 from xyz-file and returns them all as an Array
+that can then be used with calculate_adaptive_sample_inputs to calculate energy data.
+Differs from load_clusters_and_sample_input by taking every point from file
+
+# Arguments
+- `fname_cluster1` : file where cluster1 is sampled
+- `cluster2` :  cluster2
+- `nlines` : number of lines to be sampled in calculation
+- `max_e` : Point that is closest and has less energy than this will be starting point for a line
+- `unit` : Unit in which `max_e` is given
+- `npoints` : Number of points in potential
+- `maxdis` : Maximum distance in potential calculation
+- `sstep` : Search step size for adaptive search
+- `startdistance` : Distance from which adaptive seach is started
+"""
+function load_clusters_and_make_input(fname_cluster1, cluster2, calculator;
+                                      nlines=1, max_e=0, unit="cm-1", npoints=10,
+                                      maxdis=9.0, sstep=0.1, startdistance=2.5)
+    cluster1 = read_xyz(fname_cluster1)
+
+    return  [InputAdaptiveSampler(calculator, c, cluster2,
+                nlines, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
+                sstep=sstep, startdistance=startdistance) for c in cluster1 ]
+end
+
+
+"""
+load_clusters_and_sample_input(fname_cluster1, cluster2, calculator, nsamples;
+                                      nlines=1, max_e=0, unit="cm-1", npoints=10,
+                                      maxdis=9.0, sstep=0.1, startdistance=2.5)
+
+Loads cluster1 from xyz-file and takes `nsamples` samples of it and returns them as an Array
+that can then be used with calculate_adaptive_sample_inputs to calculate energy data
+
+# Arguments
+- `fname_cluster1` : file where cluster1 is sampled
+- `cluster2` :  cluster2
+- `nsamples` :  number of samples taken from `fname_cluster1`
+- `nlines` : number of lines to be sampled in calculation
+- `max_e` : Point that is closest and has less energy than this will be starting point for a line
+- `unit` : Unit in which `max_e` is given
+- `npoints` : Number of points in potential
+- `maxdis` : Maximum distance in potential calculation
+- `sstep` : Search step size for adaptive search
+- `startdistance` : Distance from which adaptive seach is started
+"""
+function load_clusters_and_sample_input(fname_cluster1, cluster2, calculator, nsamples;
+                                      nlines=1, max_e=0, unit="cm-1", npoints=10,
+                                      maxdis=9.0, sstep=0.1, startdistance=2.5)
+    cluster1 = read_xyz(fname_cluster1)
+
+    return  [InputAdaptiveSampler(calculator, rand(cluster1), cluster2,
+                nlines, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
+                sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+end
+
+
+"""
+    calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=nworkers())
+
+Uses adaptive line sampler to `inputs` in distributed fashion and save data too
+
+# Arguments
+- `inputs` : calculation inputs array (eg. from load_clusters_and_sample_input)
+- `save_file_name` : file where data saved
+- `save_step=nworkers()` : number of calculated items before data is saved
+"""
+function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=nworkers())
+    t= collect(1:save_step:length(inputs))
+    i_range = [ t[i-1]:t[i]-1  for i in 2:length(t) ]
+    if t[end] < length(inputs)
+        push!(i_range, t[end]:length(inputs))
+    end
+    @info "i_range $(i_range)"
+
+    c = Channel(length(i_range))
+
+    for r in i_range
+        @async put!(c, pmap(distributedcalculate._sample_and_calculate,inputs[r]) )
+    end
+
+    tmp = take!(c)
+    energy = hcat(map( x -> x["Energy"], tmp)...)
+    points = hcat(map( x -> x["Points"], tmp)...)
+    mindis = vcat(map( x -> x["Mindis"], tmp)...)
+    if save_file_name != ""
+        @info "Saving data to file $(save_file_name)"
+        write_save_file(save_file_name, inputs[1].cal, points, energy,
+                        inputs[1].cl1, inputs[2].cl1)
+    end
+
+    for i in i_range[1+1:end]
+        tmp = take!(c)
+        energy = hcat(energy, hcat(map( x -> x["Energy"], tmp)...) )
+        points = hcat(points, hcat(map( x -> x["Points"], tmp)...) )
+        mindis = vcat(mindis, vcat(map( x -> x["Mindis"], tmp)...) )
+        if save_file_name != ""
+            @info "Saving data to file $(save_file_name)"
+            write_save_file(save_file_name, inputs[1].cal, points, energy,
+                            inputs[1].cl1, inputs[2].cl1)
+        end
+    end
+    return Dict("Energy" => energy, "Points" => points, "Mindis" => mindis)
+end
+
 
 end  # module restarttools

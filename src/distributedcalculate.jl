@@ -1,14 +1,21 @@
+"""
+Contains methods to implement distributed calculations
+"""
 module distributedcalculate
 
 
-export sample_and_calculate, sample_ntimes, calculate_points
+export sample_ntimes, calculate_points
 
 using ..calculators, ..sample, ..clusters
 using Distributed
 
 
+"""
+    _sample_and_calculate(inputs)
 
-function sample_and_calculate(inputs)
+Internal helper function to help implement distributed calculations
+"""
+function _sample_and_calculate(inputs::InputAdaptiveSampler)
     start_dir = pwd()
     if inputs.cal.calculator.tmp_dir != start_dir
         cd(inputs.cal.calculator.tmp_dir)
@@ -16,15 +23,29 @@ function sample_and_calculate(inputs)
     return sample_multiple_adaptive_lines(inputs, basename="base-$(myid())", id="Pid $(myid())")
 end
 
-function sample_ntimes(input, n)
+
+"""
+    sample_ntimes(input, n=1)
+
+Calls sample_multiple_adaptive_lines `n` times using distributed pmap
+"""
+function sample_ntimes(input::InputAdaptiveSampler, n=1)
     inp = [input for i in 1:n]
-    tmp = pmap(sample_and_calculate, inp)
+    tmp = pmap(_sample_and_calculate, inp)
     energy = hcat(map( x -> x["Energy"], tmp)...)
     points = hcat(map( x -> x["Points"], tmp)...)
     mindis = vcat(map( x -> x["Mindis"], tmp)...)
     return Dict("Energy" => energy, "Points" => points, "Mindis" => mindis)
 end
 
+
+
+"""
+    _calculate_points(cal, c1_points, c2_points)
+
+Internal helper function to ease use of distributed calculations.
+Users should call "calculate_points" instead.
+"""
 function _calculate_points(cal, c1_points, c2_points)
     start_dir = pwd()
     if cal.calculator.tmp_dir != start_dir
@@ -34,11 +55,23 @@ function _calculate_points(cal, c1_points, c2_points)
                                  id="Pid $(myid())")
 end
 
-function calculate_points(ca, c1_points, c2_points; batch_size=16)
+
+"""
+    calculate_points(calculator, c1_points, c2_points; batch_size=16)
+
+Calculates using distributed pmap energy between two given clusters arrays
+
+# Atributes
+- `calculator` : calculator used in energy calculations
+- `c1_points`  : array of clusters
+- `c2_points`  : array of clusters
+- `batch_size` : bactch size for distributed calculations
+"""
+function calculate_points(calculator, c1_points, c2_points; batch_size=16)
     l = length(c1_points)
     if length(c2_points) != l
-        @error "cluster1 has different dimensions than cluster2"
-        throw(error("cluster1 has different dimensions than cluster2"))
+        @error "cluster1 array has different dimensions than cluster2 array"
+        throw(error("cluster1 array has different dimensions than cluster2 array"))
     end
     if batch_size > l
         c1_in = [c1_points]
