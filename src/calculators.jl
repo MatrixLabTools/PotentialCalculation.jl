@@ -1,7 +1,12 @@
 module calculators
 
-export AbstactCalculationType, Energy, Gradient, AbstractCalculator, Orca,
-       Calculator, write_input, read_energy, calculate_energy, clean_calculation_files,
+export AbstractCalculator,
+       Orca,
+       Calculator,
+       write_input,
+       read_energy,
+       calculate_energy,
+       clean_calculation_files,
        bsse_corrected_energy
 
 
@@ -29,17 +34,6 @@ end
 
 
 
-abstract type AbstactCalculationType end
-
-struct Energy <: AbstactCalculationType
-end
-
-struct Gradient <: AbstactCalculationType
-    analytic::Bool
-    gradient() = new(true)
-    gradient(analytic::Bool) = new(analytic)
-end
-
 
 
 abstract type AbstractCalculationProgram end
@@ -66,7 +60,6 @@ mutable struct Calculator
     method
     basis
     calculator
-    calculation_type
 end
 
 
@@ -110,17 +103,35 @@ function calculate_energy(cal::Calculator, points; basename="base", ghost=undef,
     inname = "$(basename).inp"
     outname= "$(basename).out"
     cmd = pipeline(`$(cal.calculator.excecutable) $(inname)`, outname)
-    out = similar(points,Float64)
-    for i in eachindex(points)
+    out = Float64[]
+    for p in points
         ts = time()
         open(inname,"w") do io
-            write_input(io, cal, points[i], ghost=ghost)
+            write_input(io, cal, p, ghost=ghost)
         end
         run(cmd)
-        out[i] = read_energy(outname)
+        push!(out, read_energy(outname) )
         te = time()
         @info "$(id) : Calculation done in $(round(te-ts, digits=1)) seconds"
     end
+    return out
+end
+
+
+function calculate_energy(cal::Calculator, point::Cluster; basename="base", ghost=undef, id="")
+    clean_calculation_files(basename=basename)
+    inname = "$(basename).inp"
+    outname= "$(basename).out"
+    cmd = pipeline(`$(cal.calculator.excecutable) $(inname)`, outname)
+
+    ts = time()
+    open(inname,"w") do io
+        write_input(io, cal, point, ghost=ghost)
+    end
+    run(cmd)
+    out = read_energy(outname)
+    te = time()
+    @info "$(id) : Calculation done in $(round(te-ts, digits=1)) seconds"
     return out
 end
 
@@ -132,6 +143,17 @@ function bsse_corrected_energy(cal::Calculator, c1, c2; basename="base", id="")
     e = calculate_energy(cal, points, basename=basename, id=id)
     l1 = length(c1[1])
     l2 = length(c2[1]) + l1
+    bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id)
+    bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id)
+    return e .- bsse1 .- bsse2
+end
+
+function bsse_corrected_energy(cal::Calculator, c1::Cluster, c2::Cluster; basename="base", id="")
+    # expects ORCA calculator
+    points = c1 + c2
+    e = calculate_energy(cal, points, basename=basename, id=id)
+    l1 = length(c1)
+    l2 = length(c2) + l1
     bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id)
     bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id)
     return e .- bsse1 .- bsse2

@@ -122,6 +122,10 @@ function save_jld_data(fname, data)
             file["Energy"] = data["Energy"]
             @info "Energy information saved"
         end
+        if haskey(data,"restart_energy")
+            file["restart_energy"] = data["restart_energy"]
+            @info "Restart information saved"
+        end
     end
     @info "Data writing to file \"$(fname)\" done"
 end

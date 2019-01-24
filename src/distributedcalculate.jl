@@ -84,7 +84,7 @@ function calculate_points(calculator, c1_points, c2_points; batch_size=16)
             push!(c2_in, c2_points[end-mod(l,batch_size):end])
         end
     end
-    ca_in = fill(ca ,size(c1_in))
+    ca_in = fill(calculator ,size(c1_in))
     energy = pmap(_calculate_points, ca_in, c1_in, c2_in)
     energy_out = vcat(energy...)
     return reshape(energy_out, size(c1_points))
