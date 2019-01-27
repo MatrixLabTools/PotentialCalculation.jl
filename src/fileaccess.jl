@@ -156,7 +156,7 @@ function read_xyz(fname)
 
     # How many clusters - use of floor allows extra empty lines at end
     nclusters = Int(floor(length(lines)/(natoms+2)))
-    @info "Type of nclusters $(typeof(nclusters))"
+    @debug "Type of nclusters $(typeof(nclusters))"
 
     xyz = zeros(Float64, natoms,3)
     atoms = Vector{AtomOnlySymbol}(undef, natoms)

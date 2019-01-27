@@ -28,8 +28,15 @@ mutable struct ClusterNoSymbols <: AbstractCluster
 end
 
 
+"""
+    Cluster{T<:AbstractAtom} <: AbstractClusterWithSymbols
+
+Structure to hold location data of clusters/molecules
+"""
 mutable struct Cluster{T<:AbstractAtom} <: AbstractClusterWithSymbols
+    "Location of atoms"
     xyz::Array{Float64,2}
+    "Symbols for atoms"
     atoms::Vector{T}
     function Cluster{T}(xyz::Array{<:Real,2}, atoms:: Vector{<:T}) where T<:AbstractAtom
         if size(xyz,1) != length(atoms)

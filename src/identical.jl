@@ -1,4 +1,6 @@
-#import Base.push!
+"""
+Methods to help handling of identical atoms in molecules
+"""
 module identical
 
 
@@ -41,10 +43,19 @@ function Base.push!(a::AbstractIdentical, x)
     return a
 end
 
-function areidentical(a::AbstractIdentical, x)
+"""
+    areidentical(a::AbstractIdentical, x)
+
+Tests are objects x
+
+# Arguments
+- 'identical::AbstractIdentical' : object holding identical data
+- 'x' : collectable holiding keys of object to be tested for identical information
+"""
+function areidentical(identical::AbstractIdentical, x)
     s = Set(x)
-    for x in a.identical
-        if issubset(s,x)
+    for y in identical.identical
+        if issubset(s,y)
             return true
         end
     end
