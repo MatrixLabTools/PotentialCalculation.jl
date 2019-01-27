@@ -142,6 +142,7 @@ function continue_calculation(fname, calculator::Calculator; save_file="", resta
         @async put!(c , (collumn ,pmap( distributedcalculate._calculate_points,
                                        inputs, c1_points,
                                         c2_points ) ))
+        sleep(0.1)  # make sure that FIFO que is filled in right order
     end
 
 
@@ -203,6 +204,7 @@ function calculate_with_different_method(fname, calculator::Calculator;
         @async put!(c , (collumn ,pmap( distributedcalculate._calculate_points,
                                        inputs, c1_points[:,collumn],
                                         c2_points[:,collumn] ) ))
+        sleep(0.1)  # make sure that FIFO que is filled in right order
     end
 
     tmp_energy = []
