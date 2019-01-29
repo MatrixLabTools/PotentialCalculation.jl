@@ -142,7 +142,7 @@ function continue_calculation(fname, calculator::Calculator; save_file="", resta
         @async put!(c , (collumn ,pmap( distributedcalculate._calculate_points,
                                        inputs, c1_points,
                                         c2_points ) ))
-        sleep(0.1)  # make sure that FIFO que is filled in right order
+        sleep(0.1)  # make sure that FIFO queue is filled in right order
     end
 
 
@@ -151,7 +151,7 @@ function continue_calculation(fname, calculator::Calculator; save_file="", resta
         push!(data["restart_energy"], take!(c))
         if restart_file != ""
             write_restart_file(restart_file, calculator, data["Points"], data["restart_energy"],
-                               data["cluster1"], data["cluster1"])
+                               data["cluster1"], data["cluster2"])
         end
     end
 
@@ -162,7 +162,7 @@ function continue_calculation(fname, calculator::Calculator; save_file="", resta
     end
     if save_file != ""
         write_save_file(save_file, calculator, data["Points"], energy,
-                           data["cluster1"], data["cluster1"])
+                           data["cluster1"], data["cluster2"])
     end
     return Dict("Energy" => energy, "Points"=> data["Points"],
                "cluster1"=>data["cluster1"], "cluster2"=>data["cluster2"],
@@ -204,7 +204,7 @@ function calculate_with_different_method(fname, calculator::Calculator;
         @async put!(c , (collumn ,pmap( distributedcalculate._calculate_points,
                                        inputs, c1_points[:,collumn],
                                         c2_points[:,collumn] ) ))
-        sleep(0.1)  # make sure that FIFO que is filled in right order
+        sleep(0.1)  # make sure that FIFO queue is filled in right order
     end
 
     tmp_energy = []
@@ -212,7 +212,7 @@ function calculate_with_different_method(fname, calculator::Calculator;
         push!(tmp_energy, take!(c))
         if restart_file != ""
             write_restart_file(restart_file, calculator, data["Points"], tmp_energy,
-                               data["cluster1"], data["cluster1"])
+                               data["cluster1"], data["cluster2"])
         end
     end
 
@@ -223,7 +223,7 @@ function calculate_with_different_method(fname, calculator::Calculator;
     end
     if save_file != ""
         write_save_file(save_file, calculator, data["Points"], energy,
-                           data["cluster1"], data["cluster1"])
+                           data["cluster1"], data["cluster2"])
     end
     return Dict("Energy" => energy, "Points"=> data["Points"],
                "cluster1"=>data["cluster1"], "cluster2"=>data["cluster2"],
