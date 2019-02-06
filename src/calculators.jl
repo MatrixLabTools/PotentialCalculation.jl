@@ -38,6 +38,20 @@ end
 
 abstract type AbstractCalculationProgram end
 
+"""
+    mutable struct Orca <: AbstractCalculationProgram
+
+Holds information of how to use ORCA program.
+
+Note that if you are using more than 1 core you need to specify exact
+path to orca executable.
+
+# Fields
+- `excecutable` : path to "orca" executable - default = `"orca"`
+- `ncore` : number of cores used by orca - default = `1`
+- `maxmem` : maximum memory per core for orca - default = `1000`
+- `tmp_dir` : directory where calculations are done - default = `mktempdir()`
+"""
 mutable struct Orca <: AbstractCalculationProgram
     "path for orca excecutable"
     excecutable
@@ -49,8 +63,6 @@ mutable struct Orca <: AbstractCalculationProgram
     tmp_dir
     function Orca(;excecutable="orca",
                    ncore=1, maxmem=1000, tmp_dir=mktempdir())
-        #cd(tmp_dir)
-        #@info "Changed working directory to $(tmp_dir)"
         new(excecutable, ncore, maxmem, tmp_dir)
     end
 end

@@ -33,6 +33,11 @@ data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname)
 @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
 @test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
 
+ldata=load_jld_data(sname)
+for fn in [fname, sname]
+    ldata=load_jld_data(fn)
+    @test length(ldata["cluster1"]) + length(ldata["cluster2"]) == length(ldata["Points"][1])
+end
 
 rm(fname)
 rm(rname)

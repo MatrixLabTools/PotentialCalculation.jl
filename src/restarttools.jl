@@ -232,7 +232,7 @@ end
 
 
 """
-load_clusters_and_sample_input(fname_cluster1, cluster2, calculator, nsamples;
+load_clusters_and_make_input(fname_cluster1, cluster2, calculator, nsamples;
                                       nlines=1, max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
 
@@ -299,7 +299,7 @@ end
 Uses [`adaptive_line_sampler`](@ref) to `inputs` in distributed fashion
 
 # Arguments
-- `inputs` : calculation inputs array (eg. from load_clusters_and_sample_input)
+- `inputs` : calculation inputs array (eg. from [`load_clusters_and_sample_input`](@ref))
 - `save_file_name` : file where data saved
 - `save_step=nworkers()` : number of calculated items before data is saved
 """

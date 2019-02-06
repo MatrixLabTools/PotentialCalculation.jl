@@ -1,24 +1,28 @@
 using Distributed
 
 addprocs(8)
+
+
+#Adopt or drop these depending your path
 @everywhere using Pkg
-@everywhere Pkg.activate(".")
+@everywhere Pkg.activate("..")
+
 @everywhere using PotentialCalculation
 
 
 
-ca = Calculator("blyp d3bj", "ma-def2-tzvp", Orca())
-c1=Cluster{AtomOnlySymbol}([-6.7041359778      1.3501192944      0.0102209137;
--5.3688853815      1.2229556023      0.0440598937;
--7.2470157373      2.4374213225      0.0651311769;
- -5.0398812618      2.1435406993      0.1155201154;
- -7.2001330967      0.3718768293     -0.0703451879], AtomOnlySymbol.(["C", "O", "O", "H", "H"]) )
+mp2 = Calculator("RI-MP2 RIJK", "aug-cc-pVTZ aug-cc-pVTZ/C def2/JK TIGHTSCF", Orca())
 
+Ar = Cluster{AtomOnlySymbol}(rand(1,3), AtomOnlySymbol.(["Ar"]))
+inputs = load_clusters_and_sample_input("some trajectory.xyz",
+                      Ar, mp2, 32, max_e=5000, npoints=50)
 
-#c2 = Cluster{AtomOnlySymbol}([0.0 0.0 0.0; 1.2 0.0 0.0 ], AtomOnlySymbol.(["N", "N"]))
-c2 = Cluster{AtomOnlySymbol}(rand(1,3), AtomOnlySymbol.(["Ar"]))
+fname="file to save results"
+data = calculate_adaptive_sample_inputs(inputs, save_file_name=fname)
 
+#Calculate with different method using same points
+ccf12 = Calculator("CCSD(T)-F12/RI", "cc-pVDZ-F12 cc-pVDZ-F12-CABS cc-pVTZ/C TIGHTSCF", Orca(maxmem=3500))
+data2 = calculate_with_different_method(fname, ccf12, save_file="final results file", restart_file="restart file")
 
-inp = InputAdaptiveSampler(ca,c1,c2, 2, 5000, startdistance=2.4, npoints=10)
-
-data = sample_ntimes(inp, 8)
+#If you need to restart calculation
+data3=continue_calculation("restart file", ccf12, save_file="final results file", restart_file="new restart file")
