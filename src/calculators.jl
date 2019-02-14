@@ -15,18 +15,18 @@ using ..clusters
 
 
 
-
+#TODO remove expicit referenzes to Cluster.xyz
 function print_orca_xyz(io::IO, c::AbstractClusterWithSymbols; ghost=undef)
     if ghost == undef
         for i in 1:length(c)
-            println(io, c.atoms[i].id, "   ", c.xyz[i,1], "  ", c.xyz[i,2], "  ", c.xyz[i,3])
+            println(io, c.atoms[i].id, "   ", c.xyz[1,i], "  ", c.xyz[2,i], "  ", c.xyz[3,i])
         end
     else
         for i in 1:length(c)
             if i in ghost
-                println(io, c.atoms[i].id, ":   ", c.xyz[i,1], "  ", c.xyz[i,2], "  ", c.xyz[i,3])
+                println(io, c.atoms[i].id, ":   ", c.xyz[1,i], "  ", c.xyz[2,i], "  ", c.xyz[3,i])
             else
-                println(io, c.atoms[i].id, "   ", c.xyz[i,1], "  ", c.xyz[i,2], "  ", c.xyz[i,3])
+                println(io, c.atoms[i].id, "   ", c.xyz[1,i], "  ", c.xyz[2,i], "  ", c.xyz[3,i])
             end
         end
     end
@@ -174,6 +174,7 @@ end
 
 function clean_calculation_files(;dir=".", basename="base")
     filenames=readdir(dir)
+    # There is a  possible exploit here related to basename
     i = map( x -> occursin(basename, x), filenames)
     rm.(filenames[i])
 end

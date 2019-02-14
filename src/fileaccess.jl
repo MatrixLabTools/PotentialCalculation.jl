@@ -158,7 +158,7 @@ function read_xyz(fname)
     nclusters = Int(floor(length(lines)/(natoms+2)))
     @debug "Type of nclusters $(typeof(nclusters))"
 
-    xyz = zeros(Float64, natoms,3)
+    xyz = zeros(Float64, 3, natoms)
     atoms = Vector{AtomOnlySymbol}(undef, natoms)
     clusters = Vector{Cluster{AtomOnlySymbol}}()
 
@@ -166,9 +166,9 @@ function read_xyz(fname)
         for na in 1:natoms
             cont = split(lines[(nc-1)*(natoms+2)+na+2])
             atoms[na] = AtomOnlySymbol(cont[1])
-            xyz[na,1] = parse(Float64, cont[2])
-            xyz[na,2] = parse(Float64, cont[3])
-            xyz[na,3] = parse(Float64, cont[4])
+            xyz[1,na] = parse(Float64, cont[2])
+            xyz[2,na] = parse(Float64, cont[3])
+            xyz[3,na] = parse(Float64, cont[4])
         end
         push!(clusters, Cluster{AtomOnlySymbol}(xyz, atoms))
     end
