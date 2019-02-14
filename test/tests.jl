@@ -10,13 +10,15 @@ xyzname = tempname()
 
 ca = Calculator("blyp d3bj", "ma-def2-tzvp", Orca())
 
-formic_acid=Cluster{AtomOnlySymbol}([-6.7041359778      1.3501192944      0.0102209137;
--5.3688853815      1.2229556023      0.0440598937;
--7.2470157373      2.4374213225      0.0651311769;
- -5.0398812618      2.1435406993      0.1155201154;
- -7.2001330967      0.3718768293     -0.0703451879], AtomOnlySymbol.(["C", "O", "O", "H", "H"]) )
+formic_acid=Cluster{AtomOnlySymbol}(
+ [-6.7041359778      1.3501192944      0.0102209137
+-5.3688853815      1.2229556023      0.0440598937
+-7.2470157373      2.4374213225      0.0651311769
+ -5.0398812618      2.1435406993      0.1155201154
+ -7.2001330967      0.3718768293     -0.0703451879]',
+  AtomOnlySymbol.(["C", "O", "O", "H", "H"]) )
 
- Ar = Cluster{AtomOnlySymbol}(rand(1,3), AtomOnlySymbol.(["Ar"]))
+ Ar = Cluster{AtomOnlySymbol}(rand(3), AtomOnlySymbol.(["Ar"]))
 
 open(xyzname,"w") do io
     print_xyz(io, formic_acid)
