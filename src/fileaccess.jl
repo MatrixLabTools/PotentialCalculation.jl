@@ -149,13 +149,18 @@ function load_jld_data(fname)
         _newform(x) = typeof(x)(x.xyz',x.atoms)
         old_data = deepcopy(data)
         if haskey(data,"cluster1")
+            @info "changing cluster1"
             data["cluster1"] = _newform(data["cluster1"])
-        elseif haskey(data,"cluster2")
+        end
+        if haskey(data,"cluster2")
+            @info "changing cluster2"
             data["cluster2"] = _newform(data["cluster2"])
-        elseif haskey(data,"Points")
+        end
+        if haskey(data,"Points")
+            @info "changing Points"
             data["Points"] = map(x -> _newform(x), data["Points"])
         end
-        if test_old(data)
+        if ! test_old(data)
             @warn "Data changed to new form"
             @warn "You should consider saving data to new form using 'save_jld_data'"
             return data
