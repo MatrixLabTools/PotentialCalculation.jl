@@ -47,23 +47,23 @@ Note that if you are using more than 1 core you need to specify exact
 path to orca executable.
 
 # Fields
-- `excecutable` : path to "orca" executable - default = `"orca"`
+- `executable` : path to "orca" executable - default = `"orca"`
 - `ncore` : number of cores used by orca - default = `1`
 - `maxmem` : maximum memory per core for orca - default = `1000`
 - `tmp_dir` : directory where calculations are done - default = `mktempdir()`
 """
 mutable struct Orca <: AbstractCalculationProgram
     "path for orca excecutable"
-    excecutable
+    executable
     "number of cores in calculation"
     ncore::UInt
     "maximum memory per core"
     memcore::UInt
     "directory where calculation is done"
     tmp_dir
-    function Orca(;excecutable="orca",
+    function Orca(;executable="orca",
                    ncore=1, maxmem=1000, tmp_dir=mktempdir())
-        new(excecutable, ncore, maxmem, tmp_dir)
+        new(executable, ncore, maxmem, tmp_dir)
     end
 end
 
@@ -114,7 +114,7 @@ function calculate_energy(cal::Calculator, points; basename="base", ghost=undef,
     clean_calculation_files(basename=basename)
     inname = "$(basename).inp"
     outname= "$(basename).out"
-    cmd = pipeline(`$(cal.calculator.excecutable) $(inname)`, outname)
+    cmd = pipeline(`$(cal.calculator.executable) $(inname)`, outname)
     out = Float64[]
     for p in points
         ts = time()
@@ -134,7 +134,7 @@ function calculate_energy(cal::Calculator, point::Cluster; basename="base", ghos
     clean_calculation_files(basename=basename)
     inname = "$(basename).inp"
     outname= "$(basename).out"
-    cmd = pipeline(`$(cal.calculator.excecutable) $(inname)`, outname)
+    cmd = pipeline(`$(cal.calculator.executable) $(inname)`, outname)
 
     ts = time()
     open(inname,"w") do io
