@@ -1,9 +1,21 @@
 module clusters
 
-export AbstractCluster, AbstractClusterWithSymbols,
-       ClusterNoSymbols, Cluster, ClusterWithMass, distances,
-       center_coordinates, move!, center_cluster!,
-       rotate_x!, rotate_y!, rotate_z!, print_xyz
+export AbstractCluster,
+       AbstractClusterWithSymbols,
+       center_cluster!,
+       center_coordinates,
+       Cluster,
+       cluster_angle,
+       ClusterNoSymbols,
+       ClusterWithMass,
+       dihedral_angle,
+       distances,
+       move!,
+       print_xyz,
+       rotate_x!,
+       rotate_y!,
+       rotate_z!
+
 
 using ..atoms
 using Distances: Euclidean, pairwise
@@ -146,6 +158,9 @@ function distances(c::AbstractCluster, ur1::UnitRange, ur2::UnitRange)
     return pairwise(Euclidean(),c.xyz[:,ur1],c.xyz[:,ur2])
 end
 
+function distances(c::AbstractCluster, i, j)
+    return norm(c.xyz[:,i] - c.xyz[:,j] )
+end
 
 function center_coordinates(c::AbstractCluster)
     return sum(c.xyz, dims=2) / length(c)
@@ -197,6 +212,51 @@ function print_xyz(io::IO, c::AbstractClusterWithSymbols, note=""; printheader=t
     for i in 1:length(c)
         println(io, c.atoms[i].id, "   ", c.xyz[1,i], "  ", c.xyz[2,i], "  ", c.xyz[3,i])
     end
+end
+
+
+
+"""
+cluster_angle(c::AbstractCluster, i, j, k)
+
+Calculates angle (radians) between atoms i,j,k in cluster
+"""
+function cluster_angle(c::AbstractCluster, i, j, k)
+    r1 = c.xyz[:,i] - c.xyz[:,j]
+    r2 = c.xyz[:,k] - c.xyz[:,j]
+    return acos(dot(r1,r2)/sqrt(dot(r1,r1)*dot(r2,r2)))
+end
+
+
+"""
+cluster_angle(c1::AbstractCluster, i, j, c2::AbstractCluster, k)
+
+Calculates angle (radians) between atons in different clusters
+
+# Arguments
+- `c1::AbstractCluster` : first cluster
+- `i` : index in `c1`
+- `j` : index in `c1`
+- `c2::AbstractCluster` : second cluster
+- `k` : index in `c2`
+"""
+function cluster_angle(c1::AbstractCluster, i, j, c2::AbstractCluster, k)
+    r1 = c1.xyz[:,i] - c1.xyz[:,j]
+    r2 = c2.xyz[:,k] - c1.xyz[:,j]
+    return acos(dot(r1,r2)/sqrt(dot(r1,r1)*dot(r2,r2)))
+end
+
+
+"""
+cluster_dihedral_angle(c::AbstractCluster, i, j, k, m)
+"""
+function dihedral_angle(c::AbstractCluster, i, j, k, m)
+    r1 = c.xyz[:,i] - c.xyz[:,j]
+    r2 = c.xyz[:,k] - c.xyz[:,j]
+    r3 = c.xyz[:,m] - c.xyz[:,k]
+    t1 = cross(cross(r1,r2), cross(r2,r3))
+    t2 = dot(cross(r1,r2), cross(r2,r3))
+    return -atan( dot(t1, r2./norm(r2)), -t2 )
 end
 
 end #module
