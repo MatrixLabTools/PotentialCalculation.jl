@@ -206,7 +206,7 @@ function read_xyz(fname)
             xyz[2,na] = parse(Float64, cont[3])
             xyz[3,na] = parse(Float64, cont[4])
         end
-        push!(clusters, Cluster{AtomOnlySymbol}(xyz, atoms))
+        push!(clusters, deepcopy(Cluster{AtomOnlySymbol}(xyz, atoms)))
     end
     return clusters
 end
