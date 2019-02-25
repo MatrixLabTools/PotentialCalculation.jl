@@ -7,7 +7,11 @@ using LinearAlgebra
 using ..calculators, ..clusters, ..atoms, ..unitconversions
 
 
+"""
+    random_rotation!(c::AbstractCluster)
 
+Rotates cluster to random orientation
+"""
 function random_rotation!(c::AbstractCluster)
     theta = 2*pi*rand(3)
     rotate_x!(c,theta[1])
@@ -15,6 +19,11 @@ function random_rotation!(c::AbstractCluster)
     rotate_z!(c,theta[3])
 end
 
+"""
+    random_rotation_matrix()
+
+Return random 3x3 rotation matrix
+"""
 function random_rotation_matrix()
     theta = 2*π*rand(3)
     Rx = Matrix{Float64}(I, 3,3)
@@ -153,6 +162,8 @@ end
 
 
 """
+    InputAdaptiveSampler
+
 Structure used to help use of adaptive line samplers
 """
 mutable struct InputAdaptiveSampler

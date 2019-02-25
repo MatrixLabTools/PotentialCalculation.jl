@@ -1,6 +1,8 @@
 """
+module restarttools
+
 Primary tools to do calculations.
-Also contains all methods to restart calculations
+Also contains all methods to restart calculations.
 """
 module restarttools
 

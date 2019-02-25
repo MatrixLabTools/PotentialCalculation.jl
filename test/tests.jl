@@ -2,6 +2,7 @@ using Test
 using PotentialCalculation
 
 @testset "restarttools" begin
+# Tests basic calculations
 
 fname = tempname()
 rname = tempname()

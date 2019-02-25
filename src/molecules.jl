@@ -1,6 +1,15 @@
+"""
+    module molecules
+
+Holds information of molecules.
+
+Main reason form this module is to implement identical atom information when fitting potential
+"""
 module molecules
 
-export AbstractMolecule, Molecule, MoleculeIdenticalInformation
+export AbstractMolecule,
+       Molecule,
+       MoleculeIdenticalInformation
 
 
 using ..identical, ..atoms
@@ -8,6 +17,15 @@ using ..identical, ..atoms
 
 abstract type AbstractMolecule end
 
+
+"""
+    Molecule{T<:AbstractAtom} <: AbstractMolecule
+
+Molecule representation
+
+# Field
+- `atoms::Vector{T}` : Contains information of atoms
+"""
 struct Molecule{T<:AbstractAtom} <: AbstractMolecule
     atoms::Vector{T}
     function Molecule{T}(atoms::Vector{T}) where T <:AbstractAtom
@@ -18,6 +36,15 @@ struct Molecule{T<:AbstractAtom} <: AbstractMolecule
     end
 end
 
+"""
+    Molecule{T<:AbstractAtom} <: AbstractMolecule
+
+Molecule representation with information of identical atoms
+
+# Field
+- `atoms::Vector{T}` : Contains information of atoms
+- `identical::Identical` : identical atom information
+"""
 struct MoleculeIdenticalInformation{T<:AbstractAtom} <: AbstractMolecule
     atoms::Vector{T}
     identical::Identical
@@ -29,6 +56,15 @@ struct MoleculeIdenticalInformation{T<:AbstractAtom} <: AbstractMolecule
     end
 end
 
+"""
+    Base.push!(Mol::MoleculeIdenticalInformation,x)
+
+Adds information for identical atoms to molecule
+
+# Arguments
+- `Mol::MoleculeIdenticalInformation` : moleculet to which identical information is added
+- `x` : collection of indices of identical atoms
+"""
 function Base.push!(Mol::MoleculeIdenticalInformation,x)
     if maximum(x) <= length(Mol.atoms)
         push!(Mol.identical,x)
@@ -37,6 +73,12 @@ function Base.push!(Mol::MoleculeIdenticalInformation,x)
     end
  end
 
+
+"""
+    areidentical(mol::MoleculeIdenticalInformation,x)
+
+Checks if atoms with indices given in collection `x` are identical
+"""
 areidentical(mol::MoleculeIdenticalInformation,x) = areidentical(mol.identical,x)
 
 Base.convert(t::Type{<:AbstractMolecule}, m::AbstractMolecule) = t(m.atoms)

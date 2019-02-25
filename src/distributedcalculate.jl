@@ -1,4 +1,6 @@
 """
+module distributedcalculate
+
 Contains methods to implement distributed calculations
 """
 module distributedcalculate

@@ -7,7 +7,6 @@ export AbstractCluster,
        Cluster,
        cluster_angle,
        ClusterNoSymbols,
-       ClusterWithMass,
        dihedral_angle,
        distances,
        move!,
@@ -28,8 +27,15 @@ import Base.==, Base.+
 abstract type AbstractCluster end
 abstract type AbstractClusterWithSymbols <: AbstractCluster end
 
+"""
+    ClusterNoSymbols <: AbstractCluster
 
-mutable struct ClusterNoSymbols{} <: AbstractCluster
+Basic cluster has only location of atoms.
+
+# Fields
+- `xyz::Array{Float64,2}` : location of atoms in 3d space, first index is x, y, z coordinate
+"""
+mutable struct ClusterNoSymbols <: AbstractCluster
     xyz::Array{Float64,2}
     function ClusterNoSymbols(xyz::AbstractArray{<:Real,2})
         if size(xyz,1) != 3
@@ -50,6 +56,10 @@ end
     Cluster{T<:AbstractAtom} <: AbstractClusterWithSymbols
 
 Structure to hold location data of clusters/molecules
+
+# Fields
+- `xyz::Array{Float64,2}` : location of atoms in 3d space, first index is x, y, z coordinate
+- `atoms::Vector{T}` : atom type information
 """
 mutable struct Cluster{T<:AbstractAtom} <: AbstractClusterWithSymbols
     "Location of atoms"
@@ -75,37 +85,6 @@ mutable struct Cluster{T<:AbstractAtom} <: AbstractClusterWithSymbols
     end
 end
 
-
-mutable struct ClusterWithMass{T<:AbstractAtom} <: AbstractClusterWithSymbols
-    xyz::Array{Float64,2}
-    atoms::Vector{T}
-    mass::Float64
-    function ClusterWithMass{T}(xyz::AbstractArray{<:Real,2}, atoms::Vector{<:AbstractAtomWithMass}) where T<:AbstractAtom
-        if size(xyz,2) != length(atoms)
-            error("Cluster has different sizes for atoms $(size(atoms)) and xyz $(size(xyz))")
-        elseif size(xyz,1) != 3
-            error("Cluster - xyz has wrong dimensions")
-        end
-        m = 0.0
-        for x in atoms
-            m += x.mass
-        end
-        new(xyz,atoms,m)
-    end
-    function ClusterWithMass{T}(xyz::AbstractArray{<:Real,1}, atoms::Vector{<:AbstractAtomWithMass}) where T<:AbstractAtom
-        if length(xyz) != 3
-            error("ClusterWithMass - xyz has wrong dimensions size=$(size(xyz))")
-        end
-        if length(atoms) != 1
-            error("ClusterWithMass - atoms has wrong dimensions length=$(size(xyz))")
-        end
-        m = 0.0
-        for x in atoms
-            m += x.mass
-        end
-        new(reshape(xyz,3,1),atoms,m)
-    end
-end
 
 
 Base.show(io::IO, C::AbstractCluster) = print(io,"$(typeof(C)) of ", size(C), " atoms")
@@ -150,60 +129,118 @@ function Base.print(io::IO, C::AbstractClusterWithSymbols)
     end
 end
 
+
+"""
+    distances(c1::AbstractCluster, c2::AbstractCluster)
+
+Return distances between atoms of given clusters
+"""
 function distances(c1::AbstractCluster, c2::AbstractCluster)
     return pairwise(Euclidean(),c1.xyz,c2.xyz)
 end
 
+"""
+    distances(c::AbstractCluster, ur1::UnitRange, ur2::UnitRange)
+
+Returns distances between atoms in given unit ranges
+"""
 function distances(c::AbstractCluster, ur1::UnitRange, ur2::UnitRange)
     return pairwise(Euclidean(),c.xyz[:,ur1],c.xyz[:,ur2])
 end
 
+"""
+    distances(c::AbstractCluster, i, j)
+
+Returns distance of atoms `i` and `j`
+"""
 function distances(c::AbstractCluster, i, j)
     return norm(c.xyz[:,i] - c.xyz[:,j] )
 end
 
+"""
+    center_coordinates(c::AbstractCluster)
+
+Gives coordinates to aricmetric mean of clusters atoms
+"""
 function center_coordinates(c::AbstractCluster)
     return sum(c.xyz, dims=2) / length(c)
 end
 
+"""
+    move!(c::AbstractCluster,r)
+
+Moves cluster by `r`
+"""
 function move!(c::AbstractCluster,r)
     c.xyz = c.xyz .+ r
 end
 
+"""
+    center_cluster!(c::AbstractCluster)
+
+Centers cluster to origin of coordinates
+"""
 function center_cluster!(c::AbstractCluster)
     move!(c, -center_coordinates(c))
 end
 
-function rotate_x!(c::AbstractCluster, theta)
+
+"""
+    rotate_x!(c::AbstractCluster, θ)
+
+Rotates cluster around x-axis by angle `θ`
+"""
+function rotate_x!(c::AbstractCluster, θ)
     R = Matrix{Float64}(I, 3,3)
-    R[2,2] = cos(theta)
+    R[2,2] = cos(θ)
     R[3,3] = R[2,2]
-    R[3,2] = -sin(theta)
+    R[3,2] = -sin(θ)
     R[2,3] = -R[3,2]
     c.xyz = R * c.xyz
 end
 
-function rotate_y!(c::AbstractCluster, theta)
+
+"""
+    rotate_y!(c::AbstractCluster, θ)
+
+Rotates cluster around y-axis by angle `θ`
+"""
+function rotate_y!(c::AbstractCluster, θ)
     R = Matrix{Float64}(I, 3,3)
-    R[1,1] = cos(theta)
+    R[1,1] = cos(θ)
     R[3,3] = R[1,1]
-    R[3,1] = sin(theta)
+    R[3,1] = sin(θ)
     R[1,3] = -R[3,1]
     c.xyz = R * c.xyz
 end
 
 
-function rotate_z!(c::AbstractCluster, theta)
+"""
+    rotate_z!(c::AbstractCluster, θ)
+
+Rotates cluster around z-axis by angle `θ`
+"""
+function rotate_z!(c::AbstractCluster, θ)
     R = Matrix{Float64}(I, 3,3)
-    R[1,1] = cos(theta)
+    R[1,1] = cos(θ)
     R[2,2] = R[1,1]
-    R[2,1] = -sin(theta)
+    R[2,1] = -sin(θ)
     R[1,2] = -R[2,1]
     c.xyz = R * c.xyz
 end
 
 
+"""
+    print_xyz(io::IO, c::AbstractClusterWithSymbols, note=""; printheader=true)
 
+Prints cluster in xyz file format
+
+# Arguments
+- `io::IO` : stream where writing is done
+- `c::AbstractClusterWithSymbols` : cluster that is writen
+- `note=""` : message writen on note line
+- `printheader=true` : wheather or not header is writen (number of atoms and note)
+"""
 function print_xyz(io::IO, c::AbstractClusterWithSymbols, note=""; printheader=true)
     if printheader
         println(io, "    ",length(c))
@@ -251,12 +288,12 @@ end
 cluster_dihedral_angle(c::AbstractCluster, i, j, k, m)
 """
 function dihedral_angle(c::AbstractCluster, i, j, k, m)
-    r1 = c.xyz[:,i] - c.xyz[:,j]
+    r1 = c.xyz[:,j] - c.xyz[:,i]
     r2 = c.xyz[:,k] - c.xyz[:,j]
     r3 = c.xyz[:,m] - c.xyz[:,k]
     t1 = cross(cross(r1,r2), cross(r2,r3))
     t2 = dot(cross(r1,r2), cross(r2,r3))
-    return -atan( dot(t1, r2./norm(r2)), -t2 )
+    return atan( dot(t1, r2./norm(r2)), t2 )
 end
 
 end #module
