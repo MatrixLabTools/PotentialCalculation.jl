@@ -241,7 +241,7 @@ that can then be used with [`calculate_adaptive_sample_inputs`](@ref) to calcula
 Differs from [`load_clusters_and_sample_input`](@ref) by taking every point from file
 
 # Arguments
-- `fname_cluster1` : file where cluster1 is sampled
+- `cluster1` : file from where cluster1 is sampled
 - `cluster2` :  cluster2
 - `nlines` : number of lines to be sampled in calculation
 - `max_e` : Point that is closest and has less energy than this will be starting point for a line
@@ -251,10 +251,10 @@ Differs from [`load_clusters_and_sample_input`](@ref) by taking every point from
 - `sstep` : Search step size for adaptive search
 - `startdistance` : Distance from which adaptive seach is started
 """
-function load_clusters_and_make_input(fname_cluster1, cluster2, calculator;
+function load_clusters_and_make_input(cluster1::String, cluster2, calculator;
                                       nlines=1, max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
-    cluster1 = read_xyz(fname_cluster1)
+    cluster1 = read_xyz(cluster1)
 
     return  [InputAdaptiveSampler(calculator, c, cluster2,
                 nlines, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
@@ -271,9 +271,9 @@ Loads cluster1 from xyz-file and takes `nsamples` samples of it and returns them
 that can then be used with [`calculate_adaptive_sample_inputs`](@ref) to calculate energy data
 
 # Arguments
-- `fname_cluster1` : file where cluster1 is sampled
-- `cluster2` :  cluster2
-- `nsamples` :  number of samples taken from `fname_cluster1`
+- `cluster1` : file from where cluster1 is sampled
+- `cluster2` : cluster2
+- `nsamples` : number of samples taken from `fname_cluster1`
 - `nlines` : number of lines to be sampled in calculation
 - `max_e` : Point that is closest and has less energy than this will be starting point for a line
 - `unit` : Unit in which `max_e` is given
@@ -282,15 +282,45 @@ that can then be used with [`calculate_adaptive_sample_inputs`](@ref) to calcula
 - `sstep` : Search step size for adaptive search
 - `startdistance` : Distance from which adaptive seach is started
 """
-function load_clusters_and_sample_input(fname_cluster1, cluster2, calculator, nsamples;
+function load_clusters_and_sample_input(cluster1::String, cluster2, calculator, nsamples;
                                       nlines=1, max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
-    cluster1 = read_xyz(fname_cluster1)
+    cluster1 = read_xyz(cluster1)
 
     return  [InputAdaptiveSampler(calculator, rand(cluster1), cluster2,
                 nlines, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
                 sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
+
+
+"""
+function load_clusters_and_sample_input(cluster1::String, cluster2::String, calculator, nsamples;
+                                      nlines=1, max_e=0, unit="cm-1", npoints=10,
+                                      maxdis=9.0, sstep=0.1, startdistance=2.5)
+
+# Arguments
+- `cluster1` : file from where cluster1 is sampled
+- `cluster2` : file from where cluster2 is sampled
+- `nsamples` : number of samples taken from `fname_cluster1`
+- `nlines` : number of lines to be sampled in calculation
+- `max_e` : Point that is closest and has less energy than this will be starting point for a line
+- `unit` : Unit in which `max_e` is given
+- `npoints` : Number of points in potential
+- `maxdis` : Maximum distance in potential calculation
+- `sstep` : Search step size for adaptive search
+- `startdistance` : Distance from which adaptive seach is started
+"""
+function load_clusters_and_sample_input(cluster1::String, cluster2::String, calculator, nsamples;
+                                      nlines=1, max_e=0, unit="cm-1", npoints=10,
+                                      maxdis=9.0, sstep=0.1, startdistance=2.5)
+    cluster1 = read_xyz(cluster1)
+    cluster2 = read_xyz(cluster2)
+
+    return  [InputAdaptiveSampler(calculator, rand(cluster1), rand(cluster2),
+                nlines, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
+                sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+end
+
 
 
 """
