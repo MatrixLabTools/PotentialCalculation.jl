@@ -26,11 +26,28 @@ const masses =  Dict("H"  =>   1.00782503223*m_au,
 abstract type AbstractAtom end
 abstract type AbstractAtomWithMass <: AbstractAtom end
 
+"""
+    AtomOnlySymbol <: AbstractAtom
 
+Atom that only has symbol
+
+# Fields
+- `id::String` : hold description of atom
+"""
 struct AtomOnlySymbol <: AbstractAtom
     id::String
 end
 
+
+"""
+    AtomWithMass <: AbstractAtomWithMass
+
+Atom that has symbol and mass
+
+# Fields
+- `id::String`    : hold description of atom
+- `mass::Float64` : mass of atom
+"""
 struct AtomWithMass <: AbstractAtomWithMass
     id::String
     mass::Float64

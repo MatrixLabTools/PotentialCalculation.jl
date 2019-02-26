@@ -59,14 +59,17 @@ end
 """
     Base.push!(Mol::MoleculeIdenticalInformation,x)
 
-Adds information for identical atoms to molecule
+Adds information for identical atoms to molecule.
 
 # Arguments
 - `Mol::MoleculeIdenticalInformation` : moleculet to which identical information is added
 - `x` : collection of indices of identical atoms
+
+## Throws
+Error if `x` is out of bounds of `Mol`
 """
 function Base.push!(Mol::MoleculeIdenticalInformation,x)
-    if maximum(x) <= length(Mol.atoms)
+    if maximum(x) <= length(Mol.atoms) && minimum(x) >= 1
         push!(Mol.identical,x)
     else
         error("Molecule has only $(length(Mol.atoms)) atoms")

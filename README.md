@@ -1,4 +1,5 @@
 # PotentialCalculation.jl
+[![codecov](https://codecov.io/gh/tjjarvinen/PotentialCalculation.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/tjjarvinen/PotentialCalculation.jl)
 
 A Julia package to calculate potential energy between two molecules.
 
