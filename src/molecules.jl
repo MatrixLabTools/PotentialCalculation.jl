@@ -82,7 +82,7 @@ function Base.push!(Mol::MoleculeIdenticalInformation,x)
 
 Checks if atoms with indices given in collection `x` are identical
 """
-areidentical(mol::MoleculeIdenticalInformation,x) = areidentical(mol.identical,x)
+identical.areidentical(mol::MoleculeIdenticalInformation,x) = identical.areidentical(mol.identical,x)
 
 Base.convert(t::Type{<:AbstractMolecule}, m::AbstractMolecule) = t(m.atoms)
 

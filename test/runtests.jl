@@ -1,7 +1,10 @@
-using Distributed
-
-addprocs(2)
-@everywhere using PotentialCalculation
 
 
-include("tests.jl")
+include("test_identical.jl")
+include("test_molecules.jl")
+include("test_unitconversions.jl")
+include("test_clusters.jl")
+
+
+
+include("test_restarttools.jl")

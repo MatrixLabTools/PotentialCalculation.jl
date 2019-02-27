@@ -1,8 +1,14 @@
 using Test
-using PotentialCalculation
+
+using Distributed
+
+addprocs(2)
+@everywhere using PotentialCalculation
 
 @testset "restarttools" begin
 # Tests basic calculations
+# TODO stop logging during tests
+# TODO remove tmp directory and files at the end
 
 fname = tempname()
 rname = tempname()
