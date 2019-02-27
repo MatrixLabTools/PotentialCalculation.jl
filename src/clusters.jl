@@ -39,13 +39,13 @@ mutable struct ClusterNoSymbols <: AbstractCluster
     xyz::Array{Float64,2}
     function ClusterNoSymbols(xyz::AbstractArray{<:Real,2})
         if size(xyz,1) != 3
-            error("ClusterNoSymbols - xyz has wrong dimensions")
+            throw(DimensionMismatch("ClusterNoSymbols - xyz has wrong dimensions"))
         end
         new(xyz)
     end
     function ClusterNoSymbols(xyz::AbstractArray{<:Real,1})
         if length(xyz) != 3
-            error("ClusterNoSymbols - atoms has wrong dimensions length=$(size(xyz))")
+            throw(DimensionMismatch("ClusterNoSymbols - atoms has wrong dimensions length=$(size(xyz))"))
         end
         new(reshape(xyz,3,1))
     end
@@ -68,20 +68,25 @@ mutable struct Cluster{T<:AbstractAtom} <: AbstractClusterWithSymbols
     atoms::Vector{T}
     function Cluster{T}(xyz::AbstractArray{<:Real,2}, atoms:: Vector{<:T}) where T<:AbstractAtom
         if size(xyz,2) != length(atoms)
-            error("Cluster has different sizes for atoms $(size(atoms)) and xyz $(size(xyz))")
+            throw(DimensionMismatch("Cluster has different sizes for atoms $(size(atoms)) and xyz $(size(xyz))"))
         elseif size(xyz,1) != 3
-            error("Cluster - xyz has wrong dimensions")
+            throw(DimensionMismatch("Cluster - xyz has wrong dimensions"))
         end
         new(xyz,atoms)
     end
     function Cluster{T}(xyz::AbstractArray{<:Real,1}, atoms:: Vector{<:T}) where T<:AbstractAtom
-        if length(xyz) != 3
-            error("Cluster - xyz has wrong dimensions size=$(size(xyz))")
-        end
         if length(atoms) != 1
-            error("Cluster - atoms has wrong dimensions length=$(size(xyz))")
+            throw(DimensionMismatch("Cluster has different number for atoms $(length(atoms)) and xyz 1"))
+        elseif length(xyz) != 3
+            throw(DimensionMismatch("Cluster - xyz has wrong dimensions"))
         end
-        new(reshape(xyz,3,1), atoms)
+        new(reshape(xyz,3,1),atoms)
+    end
+    function Cluster{T}(xyz::AbstractArray{<:Real,1}, atom::T) where T<:AbstractAtom
+        if length(xyz) != 3
+            throw(DimensionMismatch("Cluster - xyz has wrong dimensions size=$(size(xyz))"))
+        end
+        new(reshape(xyz,3,1), [atom])
     end
 end
 

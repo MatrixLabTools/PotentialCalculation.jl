@@ -1,2 +1,3 @@
 *.cov
 *.info
+submit-coverage.sh

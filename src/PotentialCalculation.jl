@@ -45,17 +45,17 @@ export m_electron,
        adaptive_line_sampler,
        sample_multiple_adaptive_lines,
        InputAdaptiveSampler,
-       sample_ntimes,
-       calculate_points,
-       write_save_file,
-       write_restart_file,
-       load_save_file,
-       load_restart_file,
-       continue_calculation,
+
+
+       calculate_adaptive_sample_inputs,
        calculate_with_different_method,
+       continue_calculation,
        load_clusters_and_make_input,
        load_clusters_and_sample_input,
-       calculate_adaptive_sample_inputs
+       load_data_file,
+       load_restart_file,
+       write_restart_file,
+       write_save_file
 
 
 include("identical.jl")
@@ -68,7 +68,6 @@ include("fileaccess.jl")
 
 include("calculators.jl")
 include("sample.jl")
-include("distributedcalculate.jl")
 
 include("restarttools.jl")
 
@@ -83,7 +82,6 @@ using .unitconversions
 using .fileaccess
 using .calculators
 using .sample
-using .distributedcalculate
 using .restarttools
 
 

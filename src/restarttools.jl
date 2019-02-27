@@ -6,17 +6,17 @@ Also contains all methods to restart calculations.
 """
 module restarttools
 
-export write_save_file,
-       write_restart_file,
-       load_save_file,
-       load_restart_file,
-       continue_calculation,
+export calculate_adaptive_sample_inputs,
        calculate_with_different_method,
+       continue_calculation,
        load_clusters_and_make_input,
        load_clusters_and_sample_input,
-       calculate_adaptive_sample_inputs
+       load_data_file,
+       load_restart_file,
+       write_restart_file,
+       write_save_file
 
-using ..fileaccess, ..calculators, ..sample, ..distributedcalculate
+using ..fileaccess, ..calculators, ..sample
 using Distributed
 
 
@@ -60,8 +60,12 @@ function write_restart_file(fname, calculator::Calculator, points, restart_energ
     save_jld_data(fname, data)
 end
 
+"""
+    load_data_file(fname)
 
-function load_save_file(fname)
+Loads saved data
+"""
+function load_data_file(fname)
     return load_jld_data(fname)
 end
 
@@ -84,30 +88,6 @@ function load_restart_file(fname)
 end
 
 
-
-"""
-    continue_calculation(fname, calculator::Calculator; batch_size=16)
-
-This funtion is ways to use restart files to continue calculation
-
-# Arguments
-- `fname` : name of restart file
-- `calculatror::Calculator` : calculator used for calculations (basis and method is read from file)
-- `batch_size` : batch_size used in calculation
-"""
-function _continue_calculation(fname, calculator::Calculator; batch_size=16)
-    data = load_restart_file(fname)
-    calculator.basis = data["setting"]["Basis"]
-    calculator.method = data["setting"]["Method"]
-    calculator.calculation_type = Energy()
-    new_data = calculate_points(calculator, data["not_calculated"]["c1_points"],
-                                data["not_calculated"]["c1_points"], batch_size=batch_size)
-    energy = hcat(data["calculated"]["Energy"], new_data["Energy"])
-    points = hcat(data["calculated"]["Points"], new_data["Points"])
-    return Dict("Energy"=>energy, "Points"=>points, "Method"=>data["setting"]["Basis"],
-                "Basis"=>data["setting"]["Basis"], "cluster1"=>data["calculated"]["cluster1"],
-                "cluster2"=>data["calculated"]["cluster2"])
-end
 
 """
     continue_calculation(fname, calculator::Calculator; save_file="", restart_file="")
@@ -138,12 +118,10 @@ function continue_calculation(fname, calculator::Calculator; save_file="", resta
     @debug "Using $(l) Channels"
     c = Channel(l)
 
-    for collumn in data["not_calculated"]
+    @async for collumn in data["not_calculated"]
         c1_points = map( x -> x[1:lc1], data["Points"][:,collumn])
         c2_points = map( x -> x[lc1+1:end], data["Points"][:,collumn])
-        @async put!(c , (collumn ,pmap( distributedcalculate._calculate_points,
-                                       inputs, c1_points,
-                                        c2_points ) ))
+        @async put!(c , (collumn ,pmap(_calculate_points, inputs, c1_points, c2_points ) ))
         sleep(0.1)  # make sure that FIFO queue is filled in right order
     end
 
@@ -202,8 +180,8 @@ function calculate_with_different_method(fname, calculator::Calculator;
     c = Channel(l)
 
     @info "Starting calculation"
-    for collumn in 1:ncol
-        @async put!(c , (collumn ,pmap( distributedcalculate._calculate_points,
+    @async for collumn in 1:ncol
+        @async put!(c , (collumn ,pmap( _calculate_points,
                                        inputs, c1_points[:,collumn],
                                         c2_points[:,collumn] ) ))
         sleep(0.1)  # make sure that FIFO queue is filled in right order
@@ -346,8 +324,8 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
     lc = min(length(i_range), trunc(Int, ceil(2*nworkers()/save_step)) )
     c = Channel(lc)
 
-     for r in i_range
-        @async put!(c, pmap(distributedcalculate._sample_and_calculate,inputs[r]) )
+    @async for r in i_range
+        @async put!(c, pmap(_sample_and_calculate,inputs[r]) )
     end
 
     tmp = take!(c)
@@ -376,5 +354,35 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
                 "Method"=>inputs[1].cal.method, "Basis"=>inputs[1].cal.basis)
 end
 
+
+
+"""
+    _sample_and_calculate(inputs)
+
+Internal helper function to help implement distributed calculations
+"""
+function _sample_and_calculate(inputs::InputAdaptiveSampler)
+    start_dir = pwd()
+    if inputs.cal.calculator.tmp_dir != start_dir
+        cd(inputs.cal.calculator.tmp_dir)
+    end
+    return sample_multiple_adaptive_lines(inputs, basename="base-$(myid())", id="Pid $(myid())")
+end
+
+
+"""
+    _calculate_points(cal, c1_points, c2_points)
+
+Internal helper function to ease use of distributed calculations.
+Users should call "calculate_points" instead.
+"""
+function _calculate_points(cal, c1_points, c2_points)
+    start_dir = pwd()
+    if cal.calculator.tmp_dir != start_dir
+        cd(cal.calculator.tmp_dir)
+    end
+    return bsse_corrected_energy(cal, c1_points, c2_points, basename="base-$(myid())",
+                                 id="Pid $(myid())")
+end
 
 end  # module restarttools
