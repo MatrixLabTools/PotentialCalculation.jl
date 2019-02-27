@@ -7,7 +7,14 @@ using PotentialCalculation.molecules
 
 @testset "molecules" begin
     m = Molecule{AtomOnlySymbol}(["A", "B", "Ca"])
+    mm = Molecule{AtomOnlySymbol}(AtomOnlySymbol.(["A", "B", "Ca"]))
     mi = MoleculeIdenticalInformation{AtomOnlySymbol}(["A", "B", "Ca"])
+    mmi = MoleculeIdenticalInformation{AtomOnlySymbol}(AtomOnlySymbol.(["A", "B", "Ca"]))
+
+    mt = convert(typeof(mi), m)
+    @test mt.atoms == m.atoms
+    
+    show(devnull, mm)
 
     @test length(m) == 3
     @test length(m) == length(mi)

@@ -74,41 +74,6 @@ Loads data from file and returns it as a [`Dict`](@ref)
 """
 function load_jld_data(fname)
     data = load(fname)
-    function test_old(data)
-        if haskey(data,"cluster1") && length(data["cluster1"]) != length(data["cluster1"].atoms)
-            return true
-        elseif haskey(data,"cluster2") && length(data["cluster2"]) != length(data["cluster2"].atoms)
-            return true
-        elseif haskey(data,"Points") && length(data["Points"][1]) != length(data["Points"][1].atoms)
-            return true
-        else
-            return false
-        end
-    end
-    if test_old(data)
-        @warn "Loaded file has old type data"
-        _newform(x) = typeof(x)(x.xyz',x.atoms)
-        old_data = deepcopy(data)
-        if haskey(data,"cluster1")
-            @info "changing cluster1"
-            data["cluster1"] = _newform(data["cluster1"])
-        end
-        if haskey(data,"cluster2")
-            @info "changing cluster2"
-            data["cluster2"] = _newform(data["cluster2"])
-        end
-        if haskey(data,"Points")
-            @info "changing Points"
-            data["Points"] = map(x -> _newform(x), data["Points"])
-        end
-        if ! test_old(data)
-            @warn "Data changed to new form"
-            @warn "You should consider saving data to new form using 'save_jld_data'"
-            return data
-        else
-            return old_data
-        end
-    end
     return data
 end
 

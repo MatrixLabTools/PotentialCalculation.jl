@@ -13,10 +13,10 @@ using ..calculators, ..clusters, ..atoms, ..unitconversions
 Rotates cluster to random orientation
 """
 function random_rotation!(c::AbstractCluster)
-    theta = 2*pi*rand(3)
-    rotate_x!(c,theta[1])
-    rotate_y!(c,theta[2])
-    rotate_z!(c,theta[3])
+    θ = 2*pi*rand(3)
+    rotate_x!(c, θ[1])
+    rotate_y!(c, θ[2])
+    rotate_z!(c, θ[3])
 end
 
 """

@@ -6,6 +6,7 @@ using PotentialCalculation.atoms
     a = AtomOnlySymbol("H")
 
     am = convert(AtomWithMass, a)
+    aa = convert(AtomOnlySymbol, "H")
 
     @test a.id == am.id
 
