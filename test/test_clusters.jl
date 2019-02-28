@@ -41,6 +41,9 @@ using PotentialCalculation.clusters
      distances(formic_acid, nf)
      distances(formic_acid, 1:2, 3:4)
 
+     distances(formic_acid, 1, nf, 2)
+     distances(formic_acid, 1:2, nf, 2:4)
+
      show(devnull, nf)
      print(devnull, formic_acid)
 

@@ -35,12 +35,12 @@ with various distances and orientations from each other.
 ```julia
 
 #Creating calculation method
-mp2 = Calculator("RI-MP2 RIJK",
-                 "aug-cc-pVTZ aug-cc-pVTZ/C def2/JK TIGHTSCF",
+mp2 = Calculator("RI-MP2 RIJK TIGHTSCF",
+                 "aug-cc-pVTZ aug-cc-pVTZ/C def2/JK",
                   Orca())
 
 # Creating argon atom
-Ar = Cluster{AtomOnlySymbol}(rand(1,3), AtomOnlySymbol.(["Ar"]))
+Ar = Cluster{AtomOnlySymbol}(rand(3), AtomOnlySymbol("Ar"))
 
 # File where other molecule is taken
 trajfile="Some trajectory.xyz"

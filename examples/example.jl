@@ -13,7 +13,7 @@ addprocs(8)
 
 mp2 = Calculator("RI-MP2 RIJK", "aug-cc-pVTZ aug-cc-pVTZ/C def2/JK TIGHTSCF", Orca())
 
-Ar = Cluster{AtomOnlySymbol}(rand(1,3), AtomOnlySymbol.(["Ar"]))
+Ar = Cluster{AtomOnlySymbol}(rand(3), AtomOnlySymbol("Ar"))
 inputs = load_clusters_and_sample_input("some trajectory.xyz",
                       Ar, mp2, 32, max_e=5000, npoints=50)
 

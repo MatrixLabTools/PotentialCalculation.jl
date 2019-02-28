@@ -17,7 +17,7 @@ export AbstractCluster,
 
 
 using ..atoms
-using Distances: Euclidean, pairwise
+using Distances: Euclidean, pairwise, euclidean
 using LinearAlgebra
 
 import Base.==, Base.+
@@ -119,11 +119,11 @@ function Base.getindex(C::ClusterNoSymbols, i::Int)
 end
 
 
-function Base.getindex(C::T, i::AbstractRange) where T <: AbstractClusterWithSymbols
+function Base.getindex(C::T, i::AbstractUnitRange) where T <: AbstractClusterWithSymbols
     return T(C.xyz[:,i], C.atoms[i])
 end
 
-function Base.getindex(C::ClusterNoSymbols, i::AbstractRange)
+function Base.getindex(C::ClusterNoSymbols, i::AbstractUnitRange)
     return ClusterNoSymbols(C.xyz[:,i])
 end
 
@@ -141,16 +141,16 @@ end
 Return distances between atoms of given clusters
 """
 function distances(c1::AbstractCluster, c2::AbstractCluster)
-    return pairwise(Euclidean(),c1.xyz,c2.xyz)
+    return pairwise(Euclidean(),c1.xyz,c2.xyz,dims=2)
 end
 
 """
-    distances(c::AbstractCluster, ur1::UnitRange, ur2::UnitRange)
+    distances(c::AbstractCluster, ar1::AbstractRange, ar2::AbstractRange)
 
 Returns distances between atoms in given unit ranges
 """
-function distances(c::AbstractCluster, ur1::UnitRange, ur2::UnitRange)
-    return pairwise(Euclidean(),c.xyz[:,ur1],c.xyz[:,ur2])
+function distances(c::AbstractCluster, ur1::AbstractUnitRange, ur2::AbstractUnitRange)
+    return pairwise(Euclidean(),c.xyz[:,ur1],c.xyz[:,ur2],dims=2)
 end
 
 """
@@ -159,7 +159,27 @@ end
 Returns distance of atoms `i` and `j`
 """
 function distances(c::AbstractCluster, i, j)
-    return norm(c.xyz[:,i] - c.xyz[:,j] )
+    return euclidean(c.xyz[:,i], c.xyz[:,j])
+end
+
+"""
+    distances(c1::AbstractCluster, i, c2::AbstractCluster, j)
+
+Return distance between atom `i` in `c1` and atom `j` in `c2`
+"""
+function distances(c1::AbstractCluster, i, c2::AbstractCluster, j)
+    return euclidean(c1.xyz[:,i], c2.xyz[:,j])
+end
+
+"""
+    distances(c1::AbstractCluster, ur1::AbstractUnitRange,
+              c2::AbstractCluster, ur2::AbstractUnitRange)
+
+Return distance between atoms `ur1` in `c1` and atom `ur2` in `c2`
+"""
+function distances(c1::AbstractCluster, ur1::AbstractUnitRange,
+                   c2::AbstractCluster, ur2::AbstractUnitRange)
+    return pairwise(Euclidean(),c1.xyz[:,ur1],c2.xyz[:,ur2],dims=2)
 end
 
 """
@@ -177,7 +197,7 @@ end
 Moves cluster by `r`
 """
 function move!(c::AbstractCluster,r)
-    c.xyz = c.xyz .+ r
+    c.xyz .+= r
 end
 
 """
