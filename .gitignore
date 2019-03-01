@@ -1,3 +1,4 @@
 *.cov
 *.info
 submit-coverage.sh
+local

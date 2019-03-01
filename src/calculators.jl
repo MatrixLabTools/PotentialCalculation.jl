@@ -12,7 +12,7 @@ export AbstractCalculator,
 
 
 using ..clusters
-
+using Distributed
 
 
 """
@@ -147,7 +147,7 @@ end
 
 
 """
-    calculate_energy(cal::Calculator, points; basename="base", ghost=undef, id="")
+    calculate_energy(cal::Calculator, points; basename="base", ghost=undef, id="", pchannel=pchannel)
 
 Calculates energy for given clusters.
 
@@ -157,8 +157,9 @@ Calculates energy for given clusters.
 - `basename="base"` : base name for input/ouput files
 - `ghost=undef` : indices for atoms considered as ghost
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
+- `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function calculate_energy(cal::Calculator, points; basename="base", ghost=undef, id="")
+function calculate_energy(cal::Calculator, points; basename="base", ghost=undef, id="", pchannel=pchannel)
     clean_calculation_files(basename=basename)
     inname = "$(basename).inp"
     outname= "$(basename).out"
@@ -171,7 +172,8 @@ function calculate_energy(cal::Calculator, points; basename="base", ghost=undef,
         run(cmd)
         out = read_energy(outname)
         te = time()
-        @info "$(id) : Calculation done in $(round(te-ts, digits=1)) seconds"
+        @debug "Calculation done in $(round(te-ts, digits=1)) seconds"
+        pchannel != undef && put!(pchannel,true)
         return out
     end
     return map(x -> do_calculation(x), points)
@@ -179,7 +181,7 @@ end
 
 
 """
-    calculate_energy(cal::Calculator, point::Cluster; basename="base", ghost=undef, id="")
+    calculate_energy(cal::Calculator, point::Cluster; basename="base", ghost=undef, id="", pchannel=pchannel)
 
 Calculates energy for given cluster.
 
@@ -189,8 +191,9 @@ Calculates energy for given cluster.
 - `basename="base"` : base name for input/ouput files
 - `ghost=undef` : indices for atoms considered as ghost
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
+- `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function calculate_energy(cal::Calculator, point::Cluster; basename="base", ghost=undef, id="")
+function calculate_energy(cal::Calculator, point::Cluster; basename="base", ghost=undef, id="", pchannel=pchannel)
     clean_calculation_files(basename=basename)
     inname = "$(basename).inp"
     outname= "$(basename).out"
@@ -203,13 +206,14 @@ function calculate_energy(cal::Calculator, point::Cluster; basename="base", ghos
     run(cmd)
     out = read_energy(outname)
     te = time()
-    @info "$(id) : Calculation done in $(round(te-ts, digits=1)) seconds"
+    @debug "Calculation done in $(round(te-ts, digits=1)) seconds"
+    pchannel != undef && put!(pchannel,true)
     return out
 end
 
 
 """
-    bsse_corrected_energy(cal::Calculator, c1, c2; basename="base", id="")
+    bsse_corrected_energy(cal::Calculator, c1, c2; basename="base", id="", pchannel=pchannel)
 
 Calculates energy of combined clusters taking into account basis set superposition error
 
@@ -219,20 +223,22 @@ Calculates energy of combined clusters taking into account basis set superpositi
 - `c2` : collection of clusters
 - `basename="base"` : base name for input/ouput files
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
+- `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function bsse_corrected_energy(cal::Calculator, c1, c2; basename="base", id="")
+function bsse_corrected_energy(cal::Calculator, c1, c2; basename="base", id="",
+                                pchannel=undef)
     # expects ORCA calculator
     points = c1 .+ c2
-    e = calculate_energy(cal, points, basename=basename, id=id)
+    e = calculate_energy(cal, points, basename=basename, id=id, pchannel=pchannel)
     l1 = length(c1[1])
     l2 = length(c2[1]) + l1
-    bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id)
-    bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id)
+    bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id, pchannel=pchannel)
+    bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id, pchannel=pchannel)
     return e .- bsse1 .- bsse2
 end
 
 """
-    bsse_corrected_energy(cal::Calculator, c1::Cluster, c2::Cluster; basename="base", id="")
+    bsse_corrected_energy(cal::Calculator, c1::Cluster, c2::Cluster; basename="base", id="", pchannel=pchannel)
 
 Calculates energy of combined cluster taking into account basis set superposition error
 
@@ -242,15 +248,17 @@ Calculates energy of combined cluster taking into account basis set superpositio
 - `c2::Cluster` : cluster
 - `basename="base"` : base name for input/ouput files
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
+- `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function bsse_corrected_energy(cal::Calculator, c1::Cluster, c2::Cluster; basename="base", id="")
+function bsse_corrected_energy(cal::Calculator, c1::Cluster, c2::Cluster;
+                               basename="base", id="", pchannel=undef)
     # expects ORCA calculator
     points = c1 + c2
-    e = calculate_energy(cal, points, basename=basename, id=id)
+    e = calculate_energy(cal, points, basename=basename, id=id, pchannel=pchannel)
     l1 = length(c1)
     l2 = length(c2) + l1
-    bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id)
-    bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id)
+    bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id, pchannel=pchannel)
+    bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id, pchannel=pchannel)
     return e .- bsse1 .- bsse2
 end
 

@@ -31,13 +31,15 @@ open(xyzname,"w") do io
     print_xyz(io, formic_acid)
 end
 
+pbar=true
+
 input1=load_clusters_and_make_input(xyzname, Ar, ca)
-inputs=load_clusters_and_sample_input(xyzname, Ar, ca, 2)
+inputs=load_clusters_and_sample_input(xyzname, Ar, ca, 2, npoints=5)
 inputss=load_clusters_and_sample_input(xyzname, xyzname, ca, 2)
 
-data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname)
-data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname)
-data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname)
+data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)
+data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
+data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
 
 savedata = load_data_file(sname)
 

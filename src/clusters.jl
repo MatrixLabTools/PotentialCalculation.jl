@@ -175,7 +175,7 @@ end
     distances(c1::AbstractCluster, ur1::AbstractUnitRange,
               c2::AbstractCluster, ur2::AbstractUnitRange)
 
-Return distance between atoms `ur1` in `c1` and atom `ur2` in `c2`
+Return distance between atoms `ur1` in `c1` and atoms `ur2` in `c2`
 """
 function distances(c1::AbstractCluster, ur1::AbstractUnitRange,
                    c2::AbstractCluster, ur2::AbstractUnitRange)
