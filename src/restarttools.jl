@@ -36,6 +36,7 @@ Saves final information for energy calculation.
 function write_save_file(fname, calculator::Calculator, points, energy, cluster1, cluster2)
     data = Dict("Energy" => energy, "Points" => points, "cluster1" => cluster1, "cluster2" => cluster2,
                 "Basis" => calculator.basis, "Method" => calculator.method )
+    flush(stdout)
     save_jld_data(fname, data)
 end
 
@@ -57,6 +58,7 @@ function write_restart_file(fname, calculator::Calculator, points, restart_energ
     @info "Writing restart file $(fname)"
     data = Dict("restart_energy" => restart_energy, "Points" => points, "cluster1" => cluster1, "cluster2" => cluster2,
                 "Basis" => calculator.basis, "Method" => calculator.method )
+    flush(stdout)
     save_jld_data(fname, data)
 end
 
@@ -147,7 +149,6 @@ function continue_calculation(fname, calculator::Calculator; save_file="", resta
         if restart_file != ""
             write_restart_file(restart_file, calculator, data["Points"], data["restart_energy"],
                                data["cluster1"], data["cluster2"])
-            flush(stdout)
         end
     end
 
@@ -159,7 +160,6 @@ function continue_calculation(fname, calculator::Calculator; save_file="", resta
     if save_file != ""
         write_save_file(save_file, calculator, data["Points"], energy,
                            data["cluster1"], data["cluster2"])
-        flush(stdout)
     end
     return Dict("Energy" => energy, "Points"=> data["Points"],
                "cluster1"=>data["cluster1"], "cluster2"=>data["cluster2"],
@@ -222,7 +222,6 @@ function calculate_with_different_method(fname, calculator::Calculator;
         if restart_file != ""
             write_restart_file(restart_file, calculator, data["Points"], tmp_energy,
                                data["cluster1"], data["cluster2"])
-            flush(stdout)
         end
     end
 
@@ -234,7 +233,6 @@ function calculate_with_different_method(fname, calculator::Calculator;
     if save_file != ""
         write_save_file(save_file, calculator, data["Points"], energy,
                            data["cluster1"], data["cluster2"])
-        flush(stdout)
     end
     return Dict("Energy" => energy, "Points"=> data["Points"],
                "cluster1"=>data["cluster1"], "cluster2"=>data["cluster2"],
@@ -410,7 +408,6 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
         @info "Saving data to file $(save_file_name)"
         write_save_file(save_file_name, inputs[1].cal, points, energy,
                         inputs[1].cl1, inputs[1].cl2)
-        flush(stdout)
     end
 
     for i in i_range[2:end]
@@ -422,7 +419,6 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
             @info "Saving data to file $(save_file_name)"
             write_save_file(save_file_name, inputs[1].cal, points, energy,
                             inputs[1].cl1, inputs[1].cl2)
-            flush(stdout)
         end
     end
     #pbar && ProgressMeter.finish!(prog)
