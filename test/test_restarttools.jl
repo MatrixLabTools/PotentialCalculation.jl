@@ -25,7 +25,8 @@ formic_acid=Cluster{AtomOnlySymbol}(
  -7.2001330967      0.3718768293     -0.0703451879]',
   AtomOnlySymbol.(["C", "O", "O", "H", "H"]) )
 
- Ar = Cluster{AtomOnlySymbol}(rand(3), AtomOnlySymbol.(["Ar"]))
+Ar = Cluster{AtomOnlySymbol}(rand(3), AtomOnlySymbol.(["Ar"]))
+N2 = Cluster{AtomOnlySymbol}([[0.0 1.0]; [0.0 0.0]; [0.0 0.0]], AtomOnlySymbol.(["N", "N"]))
 
 open(xyzname,"w") do io
     print_xyz(io, formic_acid)
@@ -34,7 +35,7 @@ end
 pbar=true
 
 input1=load_clusters_and_make_input(xyzname, Ar, ca)
-inputs=load_clusters_and_sample_input(xyzname, Ar, ca, 2, npoints=5)
+inputs=load_clusters_and_sample_input(xyzname, N2, ca, 2, npoints=5)
 inputss=load_clusters_and_sample_input(xyzname, xyzname, ca, 2)
 
 data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)

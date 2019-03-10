@@ -180,7 +180,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
     c2 = deepcopy(out2[1])
     step = (maxdis - r ) / npoints
     move!(c2,step*u)
-    tmp = _line_sampler(c1, c2[1], u, step, npoints-1)
+    tmp = _line_sampler(c1, c2, u, step, npoints-1)
     et = bsse_corrected_energy(cal, tmp[1], tmp[2], basename=basename, id=id, pchannel=pchannel)
     push!(eout, et...)
     push!(out1, tmp[1]...)
