@@ -111,7 +111,7 @@ function write_input(io::IO, cal::Calculator,
         println(io, "! ", cal.basis)
         println(io, "! MINIPRINT")
         if cal.calculator.ncore > 1
-            println(io, "%pal nprogs $(cal.calculator.ncore)")
+            println(io, "%pal nprocs $(cal.calculator.ncore) end")
         end
         println(io, "%maxcore $(cal.calculator.memcore)")
         println(io, "* xyz 0 1")
