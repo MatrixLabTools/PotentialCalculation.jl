@@ -68,6 +68,7 @@ include("unitconversions.jl")
 include("fileaccess.jl")
 
 include("calculators.jl")
+include("psi4.jl")
 include("sample.jl")
 
 include("restarttools.jl")

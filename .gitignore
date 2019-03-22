@@ -2,3 +2,4 @@
 *.info
 submit-coverage.sh
 local
+timer.dat

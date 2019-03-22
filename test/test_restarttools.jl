@@ -4,6 +4,7 @@ using Distributed
 
 addprocs(2)
 @everywhere using PotentialCalculation
+@everywhere using PotentialCalculation.psi4
 
 @testset "restarttools" begin
 # Tests basic calculations
@@ -15,7 +16,8 @@ rname = tempname()
 sname = tempname()
 xyzname = tempname()
 
-ca = Calculator("blyp d3bj", "ma-def2-tzvp", Orca())
+#ca = Calculator{Orca}("blyp d3bj", "def2-svp", Orca())
+ca = Calculator{Psi4}("scf", "cc-pvdz")
 
 formic_acid=Cluster{AtomOnlySymbol}(
  [-6.7041359778      1.3501192944      0.0102209137

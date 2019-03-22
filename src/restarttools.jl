@@ -396,10 +396,11 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
         pchannel = undef
     end
 
+    @info "putting in"
     @async for r in i_range
         @async put!(c, pmap( x->_sample_and_calculate(x, pchannel=pchannel), inputs[r]) )
     end
-
+    @info "input done"
     tmp = take!(c)
     energy = hcat(map( x -> x["Energy"], tmp)...)
     points = hcat(map( x -> x["Points"], tmp)...)
@@ -436,8 +437,10 @@ Internal helper function to help implement distributed calculations
 """
 function _sample_and_calculate(inputs::InputAdaptiveSampler; pchannel=undef)
     start_dir = pwd()
-    if inputs.cal.calculator.tmp_dir != start_dir
-        cd(inputs.cal.calculator.tmp_dir)
+    if typeof(inputs.cal.calculator) == Orca
+        if inputs.cal.calculator.tmp_dir != start_dir
+            cd(inputs.cal.calculator.tmp_dir)
+        end
     end
     return sample_multiple_adaptive_lines(inputs, basename="base-$(myid())",
                                          id="Pid $(myid())", pchannel=pchannel)
@@ -452,8 +455,10 @@ Users should call "calculate_points" instead.
 """
 function _calculate_points(cal, c1_points, c2_points; pchannel=undef)
     start_dir = pwd()
-    if cal.calculator.tmp_dir != start_dir
-        cd(cal.calculator.tmp_dir)
+    if cal.calculator == Orca
+        if cal.calculator.tmp_dir != start_dir
+            cd(cal.calculator.tmp_dir)
+        end
     end
     return bsse_corrected_energy(cal, c1_points, c2_points, basename="base-$(myid())",
                                  id="Pid $(myid())", pchannel=pchannel)
