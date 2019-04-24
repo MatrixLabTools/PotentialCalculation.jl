@@ -2,13 +2,17 @@ module calculators
 
 export AbstractCalculator,
        AbstractCalculationProgram,
-       Orca,
-       Calculator,
-       write_input,
-       read_energy,
+       bsse_corrected_energy,
        calculate_energy,
+       Calculator,
        clean_calculation_files,
-       bsse_corrected_energy
+       getBSSEsteps,
+       Orca,
+       read_energy,
+       write_input
+
+
+
 
 
 
@@ -72,6 +76,16 @@ mutable struct Orca <: AbstractCalculationProgram
         new(executable, ncore, maxmem, tmp_dir)
     end
 end
+
+"""
+    getBSSEsteps(cal::AbstractCalculationProgram)
+
+Used to set up progressbar. Returns 1, if calculator program has a method to calculate
+counter poise correction with a single command and 3, if program needs to be called
+multiple times to make counter poise correction.
+"""
+getBSSEsteps(cal::AbstractCalculationProgram) = 1
+getBSSEsteps(cal::Orca) = 3
 
 
 """

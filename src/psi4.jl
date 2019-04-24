@@ -6,28 +6,44 @@ using ..clusters
 
 export Psi4
 
+"""
+    gpsi4init=false
+
+Global variable to see if Psi4 was initiated for current process
+"""
 global gpsi4init=false
+
+"""
+    gPsi4 = undef
+
+Hold Psi4 object given by PyCall. Used to do calculation in current process
+"""
 global gPsi4 = undef
 
+"""
+    initpsi4(;memory="500 MiB", quiet=true, nthreads=1)
 
-function initpsi4(;memory="500 MiB", quiet=true)
+Used to intialize Psi4 environment
+"""
+function initpsi4(;memory="500 MiB", quiet=true, nthreads=1)
     global gPsi4 = pyimport("psi4")
     global gpsi4init = true
-    gPsi4.set_memory(memory)
     quiet && gPsi4.core.be_quiet()
+    gPsi4.set_memory(memory)
+    nthreads > 1 && gPsi4.set_num_threads(nthreads)
 end
+"""
+    mutable struct Psi4 <: AbstractCalculationProgram
 
-function setpsi4memory(memory)
-    !
-end
-
+Holds information that calculations are to be done with Psi4
+"""
 mutable struct Psi4 <: AbstractCalculationProgram
-    memory
-    tmpdir
-    function Psi4(;memory="500MiB", tmpdir=undef)
-        initpsi4(memory=memory)
+    memory::String
+    nthreads::UInt
+    function Psi4(;memory="500MiB", nthreads=1)
+        initpsi4(memory=memory, nthreads=nthreads)
         @debug gPsi4
-        new(memory, tmpdir)
+        new(memory, nthreads)
     end
 end
 

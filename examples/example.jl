@@ -11,7 +11,7 @@ addprocs(8)
 
 
 
-mp2 = Calculator("RI-MP2 RIJK", "aug-cc-pVTZ aug-cc-pVTZ/C def2/JK TIGHTSCF", Orca())
+mp2 = Calculator{Orca}("RI-MP2 RIJK", "aug-cc-pVTZ aug-cc-pVTZ/C def2/JK TIGHTSCF", Orca())
 
 Ar = Cluster{AtomOnlySymbol}(rand(3), AtomOnlySymbol("Ar"))
 inputs = load_clusters_and_sample_input("some trajectory.xyz",
@@ -21,7 +21,7 @@ fname="file to save results"
 data = calculate_adaptive_sample_inputs(inputs, save_file_name=fname)
 
 #Calculate with different method using same points
-ccf12 = Calculator("CCSD(T)-F12/RI", "cc-pVDZ-F12 cc-pVDZ-F12-CABS cc-pVTZ/C TIGHTSCF", Orca(maxmem=3500))
+ccf12 = Calculator{Orca}("CCSD(T)-F12/RI", "cc-pVDZ-F12 cc-pVDZ-F12-CABS cc-pVTZ/C TIGHTSCF", Orca(maxmem=3500))
 data2 = calculate_with_different_method(fname, ccf12, save_file="final results file", restart_file="restart file")
 
 #If you need to restart calculation

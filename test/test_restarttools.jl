@@ -6,18 +6,10 @@ addprocs(2)
 @everywhere using PotentialCalculation
 @everywhere using PotentialCalculation.psi4
 
-@testset "restarttools" begin
-# Tests basic calculations
-# TODO stop logging during tests
-# TODO remove tmp directory and files at the end
-
 fname = tempname()
 rname = tempname()
 sname = tempname()
 xyzname = tempname()
-
-#ca = Calculator{Orca}("blyp d3bj", "def2-svp", Orca())
-ca = Calculator{Psi4}("scf", "cc-pvdz")
 
 formic_acid=Cluster{AtomOnlySymbol}(
  [-6.7041359778      1.3501192944      0.0102209137
@@ -36,28 +28,51 @@ end
 
 pbar=true
 
-input1=load_clusters_and_make_input(xyzname, Ar, ca)
-inputs=load_clusters_and_sample_input(xyzname, N2, ca, 2, npoints=5)
-inputss=load_clusters_and_sample_input(xyzname, xyzname, ca, 2)
 
-data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)
-data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
-data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
 
-savedata = load_data_file(sname)
+@testset "Orca" begin
+    ca = Calculator{Orca}("blyp d3bj", "def2-svp", Orca())
 
-@test all(isapprox.(data1["Energy"], data2["Energy"], atol=2E-6))
-@test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
-@test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
+    input1=load_clusters_and_make_input(xyzname, Ar, ca)
+    inputs=load_clusters_and_sample_input(xyzname, N2, ca, 2, npoints=5)
+    inputss=load_clusters_and_sample_input(xyzname, xyzname, ca, 2)
 
-ldata=load_jld_data(sname)
-for fn in [fname, sname]
-    ldata=load_jld_data(fn)
-    @test length(ldata["cluster1"]) + length(ldata["cluster2"]) == length(ldata["Points"][1])
+    data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)
+    data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
+    data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
+
+    @test all(isapprox.(data1["Energy"], data2["Energy"], atol=2E-6))
+    @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
+    @test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
+end
+
+@testset "Psi4" begin
+    ca = Calculator{Psi4}("blyp-d3bj", "def2-svp",Psi4(memory="1000MiB", nthreads=2))
+
+    input1=load_clusters_and_make_input(xyzname, Ar, ca)
+    inputs=load_clusters_and_sample_input(xyzname, N2, ca, 2, npoints=5)
+    inputss=load_clusters_and_sample_input(xyzname, xyzname, ca, 2)
+
+    data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)
+    data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
+    data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
+
+    @test all(isapprox.(data1["Energy"], data2["Energy"], atol=2E-6))
+    @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
+    @test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
+end
+
+@testset "restarttools" begin
+    savedata = load_data_file(sname)
+
+    ldata=load_jld_data(sname)
+    for fn in [fname, sname]
+        ldata=load_jld_data(fn)
+        @test length(ldata["cluster1"]) + length(ldata["cluster2"]) == length(ldata["Points"][1])
+    end
 end
 
 rm(fname)
 rm(rname)
 rm(sname)
 rm(xyzname)
-end

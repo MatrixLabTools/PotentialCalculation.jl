@@ -105,7 +105,7 @@ Restarts calculation from given file
 """
 function continue_calculation(fname, calculator::Calculator; save_file="", restart_file="", pbar=true)
     data = load_restart_file(fname)
-    @info "File $(fname) loaded - continua calculation"
+    @info "File $(fname) loaded - continuing calculation"
     flush(stdout)
     calculator.basis = data["Basis"]
     calculator.method = data["Method"]
@@ -123,7 +123,7 @@ function continue_calculation(fname, calculator::Calculator; save_file="", resta
     c = Channel(l)
 
     if pbar
-        prog = Progress(size(data["Points"])[1]*ncol*3 , dt=1, desc="Calculating points:")
+        prog = Progress(size(data["Points"])[1]*ncol*getBSSEsteps(calculator.calculator) , dt=1, desc="Calculating points:")
         pchannel = RemoteChannel(()->Channel{Bool}(2*nworkers()), myid())
         @async while take!(pchannel)
             ProgressMeter.next!(prog)
@@ -199,7 +199,7 @@ function calculate_with_different_method(fname, calculator::Calculator;
     c = Channel(l)
 
     if pbar
-        prog = Progress(length(c1_points)*3 ,dt=1, desc="Calculating points:")
+        prog = Progress(length(c1_points)*getBSSEsteps(calculator.calculator) ,dt=1, desc="Calculating points:")
         pchannel = RemoteChannel(()->Channel{Bool}(2*nworkers()), myid())
         @async while take!(pchannel)
             ProgressMeter.next!(prog)
@@ -396,11 +396,9 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
         pchannel = undef
     end
 
-    @info "putting in"
     @async for r in i_range
         @async put!(c, pmap( x->_sample_and_calculate(x, pchannel=pchannel), inputs[r]) )
     end
-    @info "input done"
     tmp = take!(c)
     energy = hcat(map( x -> x["Energy"], tmp)...)
     points = hcat(map( x -> x["Points"], tmp)...)
