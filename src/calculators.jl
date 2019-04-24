@@ -1,13 +1,18 @@
 module calculators
 
 export AbstractCalculator,
-       Orca,
-       Calculator,
-       write_input,
-       read_energy,
+       AbstractCalculationProgram,
+       bsse_corrected_energy,
        calculate_energy,
+       Calculator,
        clean_calculation_files,
-       bsse_corrected_energy
+       getBSSEsteps,
+       Orca,
+       read_energy,
+       write_input
+
+
+
 
 
 
@@ -72,6 +77,16 @@ mutable struct Orca <: AbstractCalculationProgram
     end
 end
 
+"""
+    getBSSEsteps(cal::AbstractCalculationProgram)
+
+Used to set up progressbar. Returns 1, if calculator program has a method to calculate
+counter poise correction with a single command and 3, if program needs to be called
+multiple times to make counter poise correction.
+"""
+getBSSEsteps(cal::AbstractCalculationProgram) = 1
+getBSSEsteps(cal::Orca) = 3
+
 
 """
     mutable struct Calculator
@@ -82,11 +97,26 @@ Struct used to hold together different bits of information needed in calculation
 - `method` : calculation method informaton
 - `basis` : basis information
 - `calculator` : calculation program information
+
+# Examples
+```julia
+julia> Calculator{Orca}("method", "basis")
+Calculator{Orca}("method", "basis", Orca("orca", 0x0000000000000001, 0x00000000000003e8, "/tmp/tmpxEoJYW"))
+
+julia> Calculator{Orca}("method", "basis", Orca())
+Calculator{Orca}("method", "basis", Orca("orca", 0x0000000000000001, 0x00000000000003e8, "/tmp/tmpVg959k"))
+```
 """
-mutable struct Calculator
+mutable struct Calculator{T<:AbstractCalculationProgram}
     method
     basis
-    calculator
+    calculator::T
+    function Calculator{T}(method::AbstractString, basis::AbstractString) where T <: AbstractCalculationProgram
+        new(method, basis, T())
+    end
+    function Calculator{T}(method::AbstractString, basis::AbstractString, calculator::T) where T <: AbstractCalculationProgram
+        new(method, basis, calculator)
+    end
 end
 
 
@@ -104,7 +134,7 @@ Writes input files for calculation program. Only ORCA input is supported now.
 - `ghost=undef` : collection for atom idexes that are considered ghost atoms
 
 """
-function write_input(io::IO, cal::Calculator,
+function write_input(io::IO, cal::Calculator{Orca},
                      c::AbstractClusterWithSymbols; ghost=undef)
     if typeof(cal.calculator) == Orca
         println(io, "! ", cal.method)
@@ -159,7 +189,7 @@ Calculates energy for given clusters.
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
 - `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function calculate_energy(cal::Calculator, points; basename="base", ghost=undef, id="", pchannel=pchannel)
+function calculate_energy(cal::Calculator{Orca}, points; basename="base", ghost=undef, id="", pchannel=undef)
     clean_calculation_files(basename=basename)
     inname = "$(basename).inp"
     outname= "$(basename).out"
@@ -193,7 +223,7 @@ Calculates energy for given cluster.
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
 - `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function calculate_energy(cal::Calculator, point::Cluster; basename="base", ghost=undef, id="", pchannel=pchannel)
+function calculate_energy(cal::Calculator{Orca}, point::Cluster; basename="base", ghost=undef, id="", pchannel=undef)
     clean_calculation_files(basename=basename)
     inname = "$(basename).inp"
     outname= "$(basename).out"
@@ -225,7 +255,7 @@ Calculates energy of combined clusters taking into account basis set superpositi
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
 - `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function bsse_corrected_energy(cal::Calculator, c1, c2; basename="base", id="",
+function bsse_corrected_energy(cal::Calculator{Orca}, c1, c2; basename="base", id="",
                                 pchannel=undef)
     # expects ORCA calculator
     points = c1 .+ c2
@@ -250,7 +280,7 @@ Calculates energy of combined cluster taking into account basis set superpositio
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
 - `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function bsse_corrected_energy(cal::Calculator, c1::Cluster, c2::Cluster;
+function bsse_corrected_energy(cal::Calculator{Orca}, c1::Cluster, c2::Cluster;
                                basename="base", id="", pchannel=undef)
     # expects ORCA calculator
     points = c1 + c2

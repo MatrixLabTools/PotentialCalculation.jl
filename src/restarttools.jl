@@ -105,7 +105,7 @@ Restarts calculation from given file
 """
 function continue_calculation(fname, calculator::Calculator; save_file="", restart_file="", pbar=true)
     data = load_restart_file(fname)
-    @info "File $(fname) loaded - continua calculation"
+    @info "File $(fname) loaded - continuing calculation"
     flush(stdout)
     calculator.basis = data["Basis"]
     calculator.method = data["Method"]
@@ -123,7 +123,7 @@ function continue_calculation(fname, calculator::Calculator; save_file="", resta
     c = Channel(l)
 
     if pbar
-        prog = Progress(size(data["Points"])[1]*ncol*3 , dt=1, desc="Calculating points:")
+        prog = Progress(size(data["Points"])[1]*ncol*getBSSEsteps(calculator.calculator) , dt=1, desc="Calculating points:")
         pchannel = RemoteChannel(()->Channel{Bool}(2*nworkers()), myid())
         @async while take!(pchannel)
             ProgressMeter.next!(prog)
@@ -199,7 +199,7 @@ function calculate_with_different_method(fname, calculator::Calculator;
     c = Channel(l)
 
     if pbar
-        prog = Progress(length(c1_points)*3 ,dt=1, desc="Calculating points:")
+        prog = Progress(length(c1_points)*getBSSEsteps(calculator.calculator) ,dt=1, desc="Calculating points:")
         pchannel = RemoteChannel(()->Channel{Bool}(2*nworkers()), myid())
         @async while take!(pchannel)
             ProgressMeter.next!(prog)
@@ -399,7 +399,6 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
     @async for r in i_range
         @async put!(c, pmap( x->_sample_and_calculate(x, pchannel=pchannel), inputs[r]) )
     end
-
     tmp = take!(c)
     energy = hcat(map( x -> x["Energy"], tmp)...)
     points = hcat(map( x -> x["Points"], tmp)...)
@@ -436,8 +435,10 @@ Internal helper function to help implement distributed calculations
 """
 function _sample_and_calculate(inputs::InputAdaptiveSampler; pchannel=undef)
     start_dir = pwd()
-    if inputs.cal.calculator.tmp_dir != start_dir
-        cd(inputs.cal.calculator.tmp_dir)
+    if typeof(inputs.cal.calculator) == Orca
+        if inputs.cal.calculator.tmp_dir != start_dir
+            cd(inputs.cal.calculator.tmp_dir)
+        end
     end
     return sample_multiple_adaptive_lines(inputs, basename="base-$(myid())",
                                          id="Pid $(myid())", pchannel=pchannel)
@@ -452,8 +453,10 @@ Users should call "calculate_points" instead.
 """
 function _calculate_points(cal, c1_points, c2_points; pchannel=undef)
     start_dir = pwd()
-    if cal.calculator.tmp_dir != start_dir
-        cd(cal.calculator.tmp_dir)
+    if cal.calculator == Orca
+        if cal.calculator.tmp_dir != start_dir
+            cd(cal.calculator.tmp_dir)
+        end
     end
     return bsse_corrected_energy(cal, c1_points, c2_points, basename="base-$(myid())",
                                  id="Pid $(myid())", pchannel=pchannel)
