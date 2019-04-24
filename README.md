@@ -9,8 +9,9 @@ Currently only supported backend is [ORCA](https://orcaforum.kofo.mpg.de).
 
 ### Installation
 
+Hit "]" to enter "pkg>"
 ```julia
-julia> Pkg.add("https://github.com/tjjarvinen/PotentialCalculation.jl")
+pkg> add https://github.com/tjjarvinen/PotentialCalculation.jl
 ```
 
 
@@ -61,6 +62,7 @@ New calculations with different method can be done on previous points.
 #New method
 ccf12 = Calculator{Orca}("CCSD(T)-F12/RI",
                    "cc-pVDZ-F12 cc-pVDZ-F12-CABS cc-pVTZ/C TIGHTSCF",
+
                     Orca(maxmem=3500))
 
 data2 = calculate_with_different_method("previous results file",
@@ -75,6 +77,7 @@ To restart calculations from restart file.
 # Create calculator.
 # Method and basis does not matter as they are read from restart file
 cal = Calculator{Orca}("", "", Orca(maxmem=3500))
+
 
 data3 = continue_calculation("restart file", cal,
                              save_file="final save file",
