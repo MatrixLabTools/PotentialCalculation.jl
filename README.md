@@ -5,7 +5,8 @@ A Julia package to calculate potential energy between two molecules.
 
 Fitting of potential energy is done by separate [package](https://github.com/tjjarvinen/PotentialFitting.jl).
 
-Currently only supported backend is [ORCA](https://orcaforum.kofo.mpg.de).
+Currently supported backendes are [ORCA](https://orcaforum.kofo.mpg.de)
+and [Psi4](http://www.psicode.org/).
 
 ### Installation
 
