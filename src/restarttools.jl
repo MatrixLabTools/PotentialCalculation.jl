@@ -452,11 +452,15 @@ Internal helper function to ease use of distributed calculations.
 Users should call "calculate_points" instead.
 """
 function _calculate_points(cal, c1_points, c2_points; pchannel=undef)
+    return bsse_corrected_energy(cal, c1_points, c2_points, basename="base-$(myid())",
+                                 id="Pid $(myid())", pchannel=pchannel)
+end
+
+
+function _calculate_points(cal::Calculator{Orca}, c1_points, c2_points; pchannel=undef)
     start_dir = pwd()
-    if cal.calculator == Orca
-        if cal.calculator.tmp_dir != start_dir
-            cd(cal.calculator.tmp_dir)
-        end
+    if cal.calculator.tmp_dir != start_dir
+        cd(cal.calculator.tmp_dir)
     end
     return bsse_corrected_energy(cal, c1_points, c2_points, basename="base-$(myid())",
                                  id="Pid $(myid())", pchannel=pchannel)
