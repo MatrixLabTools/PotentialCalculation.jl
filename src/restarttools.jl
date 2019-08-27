@@ -185,7 +185,7 @@ With this function you can use already chosen points on to which to do energy ca
 function calculate_with_different_method(fname, calculator::Calculator;
                                          save_file="", restart_file="", pbar=true)
     data = load_jld_data(fname)
-    @info "File $(fname) loaded - calculating with differnt method"
+    @info "File $(fname) loaded - calculating with different method"
     flush(stdout)
     lc1 = length(data["cluster1"])
     c1_points = map(x -> x[1:lc1], data["Points"])

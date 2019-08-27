@@ -12,6 +12,7 @@ export m_electron,
        AbstractMolecule,
        Molecule,
        MoleculeIdenticalInformation,
+       makeidentical!,
 
        AbstractCluster,
        AbstractClusterWithSymbols,

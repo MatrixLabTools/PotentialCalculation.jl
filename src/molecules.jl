@@ -9,7 +9,8 @@ module molecules
 
 export AbstractMolecule,
        Molecule,
-       MoleculeIdenticalInformation
+       MoleculeIdenticalInformation,
+       makeidentical!
 
 
 using ..identical, ..atoms
@@ -56,10 +57,13 @@ struct MoleculeIdenticalInformation{T<:AbstractAtom} <: AbstractMolecule
     end
 end
 
+
 """
     Base.push!(Mol::MoleculeIdenticalInformation,x)
 
 Adds information for identical atoms to molecule.
+
+DEPRECATED!!! - use makeidentical! instead
 
 # Arguments
 - `Mol::MoleculeIdenticalInformation` : moleculet to which identical information is added
@@ -69,13 +73,30 @@ Adds information for identical atoms to molecule.
 Error if `x` is out of bounds of `Mol`
 """
 function Base.push!(Mol::MoleculeIdenticalInformation,x)
+    @warn "push! is Deprecated - use makeidentical!"
+    makeidentical!(Mol,x)
+ end
+
+
+ """
+     makeidentical!(Mol::MoleculeIdenticalInformation,x)
+
+ Adds information for identical atoms to molecule.
+
+ # Arguments
+ - `Mol::MoleculeIdenticalInformation` : moleculet to which identical information is added
+ - `x` : collection of indices of identical atoms
+
+ ## Throws
+ Error if `x` is out of bounds of `Mol`
+ """
+function makeidentical!(Mol::MoleculeIdenticalInformation,x)
     if maximum(x) <= length(Mol.atoms) && minimum(x) >= 1
         push!(Mol.identical,x)
     else
         error("Molecule has only $(length(Mol.atoms)) atoms")
     end
- end
-
+end
 
 """
     areidentical(mol::MoleculeIdenticalInformation,x)
