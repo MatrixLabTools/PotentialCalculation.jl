@@ -49,7 +49,7 @@ trajfile="Some trajectory.xyz"
 # Create input for calculations
 inputs = load_clusters_and_sample_input(trajfile, Ar, mp2,
                32,         #How many lines are calculated
-               max_e=5000, #Maximum energy in cm⁻¹ -
+               max_e=10000, #Maximum energy in cm⁻¹ -
                            #   limit to areas where energy is less than this
                npoints=50) #Number of points per line
 

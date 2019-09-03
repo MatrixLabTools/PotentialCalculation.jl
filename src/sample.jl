@@ -178,6 +178,8 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
     eout = [e[e.<0][end] + emax]
     out1 = [c1]
     c2 = deepcopy(out2[1])
+    @debug "Minimum distance at start $(minimum(distances(c1,c2)))"
+    @assert maxdis > r     #If this does not hold we have a problem
     step = (maxdis - r ) / npoints
     move!(c2,step*u)
     tmp = _line_sampler(c1, c2, u, step, npoints-1)
@@ -185,6 +187,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
     push!(eout, et...)
     push!(out1, tmp[1]...)
     push!(out2, tmp[2]...)
+    @debug "Minimum distance at end $(minimum(distances(out1[end],out2[end])))"
     return Dict("Energy" => eout, "Points" =>  out1 .+ out2,  "Mindis" =>  minimum(distances(out1[1],out2[1])))
 end
 
@@ -266,7 +269,7 @@ function sample_multiple_adaptive_lines(cal::Calculator, cl1::Cluster, cl2::Clus
     sr = startdistance
     for i in 1:nlines
         tmp = adaptive_line_sampler(cal, c1, c2, max_e; unit=unit, npoints=npoints,
-                                    maxdis=9.0, startdistance=sr, basename=basename,
+                                    maxdis=maxdis, startdistance=sr, basename=basename,
                                      id=id, pchannel=pchannel)
         push!(rtmp, tmp["Mindis"])
         sr = sum(rtmp) / length(rtmp)
