@@ -178,9 +178,10 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
     eout = [e[e.<0][end] + emax]
     out1 = [c1]
     c2 = deepcopy(out2[1])
-    @debug "Minimum distance at start $(minimum(distances(c1,c2)))"
-    @assert maxdis > r     #If this does not hold we have a problem
-    step = (maxdis - r ) / npoints
+    rr = minimum(distances(c1,c2))
+    @debug "Minimum distance at start" r rr
+    @assert maxdis > rr     #If this does not hold we have a problem
+    step = (maxdis - rr ) / npoints
     move!(c2,step*u)
     tmp = _line_sampler(c1, c2, u, step, npoints-1)
     et = bsse_corrected_energy(cal, tmp[1], tmp[2], basename=basename, id=id, pchannel=pchannel)
