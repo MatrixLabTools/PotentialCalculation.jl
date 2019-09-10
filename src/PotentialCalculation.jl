@@ -49,6 +49,7 @@ export m_electron,
 
 
        calculate_adaptive_sample_inputs,
+       calculate_energy_for_xyzfile,
        calculate_with_different_method,
        continue_calculation,
        load_clusters_and_make_input,

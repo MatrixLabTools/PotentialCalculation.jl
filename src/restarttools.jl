@@ -7,6 +7,7 @@ Also contains all methods to restart calculations.
 module restarttools
 
 export calculate_adaptive_sample_inputs,
+       calculate_energy_for_xyzfile,
        calculate_with_different_method,
        continue_calculation,
        load_clusters_and_make_input,
@@ -463,6 +464,39 @@ function _calculate_points(cal::Calculator{Orca}, c1_points, c2_points; pchannel
         cd(cal.calculator.tmp_dir)
     end
     return bsse_corrected_energy(cal, c1_points, c2_points, basename="base-$(myid())",
+                                 id="Pid $(myid())", pchannel=pchannel)
+end
+
+
+
+"""
+    calculate_energy_for_xyzfile(fname, cal; pbar=true)
+
+Reads xyz-file and calculates energy of each point on it
+"""
+function calculate_energy_for_xyzfile(fname, cal; pbar=true)
+    println("Calculating points for a file $(fname)")
+    points = read_xyz(fname)
+    out=@showprogress pmap(points) do x
+        _calculate_energy(cal,x)
+    end
+    return out
+end
+
+
+
+
+function _calculate_energy(cal, points; pchannel=undef)
+    return calculate_energy(cal, points, basename="base-$(myid())",
+                                 id="Pid $(myid())", pchannel=pchannel)
+end
+
+function _calculate_energy(cal::Calculator{Orca}, points; pchannel=undef)
+    start_dir = pwd()
+    if cal.calculator.tmp_dir != start_dir
+        cd(cal.calculator.tmp_dir)
+    end
+    return calculate_energy(cal, points, basename="base-$(myid())",
                                  id="Pid $(myid())", pchannel=pchannel)
 end
 
