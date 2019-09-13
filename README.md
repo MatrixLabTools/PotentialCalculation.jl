@@ -1,9 +1,9 @@
 # PotentialCalculation.jl
-[![codecov](https://codecov.io/gh/tjjarvinen/PotentialCalculation.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/tjjarvinen/PotentialCalculation.jl)
+[![codecov](https://codecov.io/gh/MatrixLabTools/PotentialCalculation.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/MatrixLabTools/PotentialCalculation.jl)
 
 A Julia package to calculate potential energy between two molecules.
 
-Fitting of potential energy is done by separate [package](https://github.com/tjjarvinen/PotentialFitting.jl).
+Fitting of potential energy is done by separate [package](https://github.com/MatrixLabTools/PotentialFitting.jl).
 
 Currently supported backendes are [ORCA](https://orcaforum.kofo.mpg.de)
 and [Psi4](http://www.psicode.org/).
@@ -12,7 +12,8 @@ and [Psi4](http://www.psicode.org/).
 
 Hit "]" to enter "pkg>"
 ```julia
-pkg> add https://github.com/tjjarvinen/PotentialCalculation.jl
+pkg> add registry add https://github.com/MatrixLabTools/PackageRegistry
+pkg> add PotentialCalculation
 ```
 
 
@@ -63,7 +64,6 @@ New calculations with different method can be done on previous points.
 #New method
 ccf12 = Calculator{Orca}("CCSD(T)-F12/RI",
                    "cc-pVDZ-F12 cc-pVDZ-F12-CABS cc-pVTZ/C TIGHTSCF",
-
                     Orca(maxmem=3500))
 
 data2 = calculate_with_different_method("previous results file",
