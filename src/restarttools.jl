@@ -14,6 +14,7 @@ export calculate_adaptive_sample_inputs,
        load_clusters_and_sample_input,
        load_data_file,
        load_restart_file,
+       test_work,
        write_restart_file,
        write_save_file
 
@@ -27,7 +28,7 @@ using Distributed, ProgressMeter
 Saves final information for energy calculation.
 
 # Arguments
-- `fname` : name of restartfile
+- `fname` : name of restartfileusing PotentialCalculation
 - `calculator::Calculator` : calculator used in calculations
 - `points` : 2d array of point where to calculate energy
 - `energy` : energy for points that have been caculeted
@@ -80,20 +81,33 @@ which holds information of which collumns of `Points` have not been calculated.
 """
 function load_restart_file(fname)
     data = load_jld_data(fname)
-    not_calculated = Set(1:size(data["Points"])[2])
     if haskey(data, "restart_energy")
-        setdiff!(not_calculated, x[1] for x in data["restart_energy"])
+        if ! ( typeof(data["restart_energy"]) <: Tuple)
+            #NOTE Old style restart file
+            not_calculated = Set(1:size(data["Points"])[2])
+            setdiff!(not_calculated, x[1] for x in data["restart_energy"])
+            push!(data, "not_calculated"=>not_calculated)
+            iscalculated = trues(size(data["Points"]))
+            for i in not_calculated
+                iscalculated[:,i] .= false
+            end
+            energy = similar(data["Points"],Float64)
+            for (i,e) in data["restart_energy"]
+                energy[:,i] .= e
+            end
+            data["restart_energy"] = (energy, iscalculated)
+        end
     else
         @warn "File is not a restart file" fname
     end
-    push!(data, "not_calculated"=>not_calculated)
     return data
 end
 
 
 
 """
-    continue_calculation(fname, calculator::Calculator; save_file="", restart_file="", pbar=true)
+continue_calculation(fname, calculator::Calculator; save_file="", restart_file="",
+                              save_after=nworkers(),  pbar=true)
 
 Restarts calculation from given file
 
@@ -102,62 +116,58 @@ Restarts calculation from given file
 - `calculator::Calculator` : calculator used in calculations
 - `save_file` : file where final results are saved, if given
 - `restart_file` : file where new restart information is saved, if given
+- `save_after=nworkers()` : make restart file when given ammount of points is calculated
 - `pbar=true` : show progress bar
 """
-function continue_calculation(fname, calculator::Calculator; save_file="", restart_file="", pbar=true)
+function continue_calculation(fname, calculator::Calculator; save_file="", restart_file="",
+                              save_after=nworkers(),  pbar=true)
     data = load_restart_file(fname)
     @info "File $(fname) loaded - continuing calculation"
-    flush(stdout)
     calculator.basis = data["Basis"]
     calculator.method = data["Method"]
 
+    energy,iscal = data["restart_energy"]
 
     lc1 = length(data["cluster1"])
     lc2 = length(data["cluster2"])
     rc1 =  1:lc1           #UnitRange for cluster1
     rc2 =  lc1+1:lc1+lc2   #UnitRange for cluster2
 
-    ncol = length(data["not_calculated"])
-    t = max(trunc(Int,ceil(2*nworkers()/size(data["Points"])[1])), 2)
-    l = min(t, ncol)
-    @debug "Using $(l) Channels"
-    c = Channel(l)
+    lcal = length(data["Points"])-length(data["Points"][iscal])
 
     if pbar
-        prog = Progress(size(data["Points"])[1]*ncol*getBSSEsteps(calculator.calculator) , dt=1, desc="Calculating points:")
-        pchannel = RemoteChannel(()->Channel{Bool}(2*nworkers()), myid())
-        @async while take!(pchannel)
-            ProgressMeter.next!(prog)
-            flush(stderr)
-            flush(stdout)
+        prog = Progress(lcal  ,dt=1, desc="Calculating points:")
+    end
+
+    jobs = RemoteChannel(()->Channel(2*nworkers()))
+    results = RemoteChannel(()->Channel(2*nworkers()))
+
+    iscalculated = deepcopy(iscal)
+    @async for i in eachindex(data["Points"])
+        if ! iscal[i]
+            x = (calculator,data["Points"][i][rc1], data["Points"][i][rc2])
+            put!(jobs, (i,x) )
         end
-    else
-        pchannel = undef
     end
 
-    @async for collumn in data["not_calculated"]
-        c1_points = map( x -> x[1:lc1], data["Points"][:,collumn])
-        c2_points = map( x -> x[lc1+1:end], data["Points"][:,collumn])
-        @async put!(c , (collumn ,pmap((x,y)->_calculate_points(calculator, x,y ,pchannel=pchannel),
-                                      c1_points, c2_points ) ))
-        sleep(0.1)  # make sure that FIFO queue is filled in right order
+    for p in workers()
+        remote_do(parallel_work, p, jobs, results, _calculate_points)
     end
 
-
-
-    for collumn in 2:ncol
-        push!(data["restart_energy"], take!(c))
-        if restart_file != ""
-            write_restart_file(restart_file, calculator, data["Points"], data["restart_energy"],
+    n = 0
+    for i in 1:lcal
+        i,tmp = take!(results)
+        energy[i] = tmp
+        iscalculated[i] = true
+        pbar && ProgressMeter.next!(prog)
+        n += 1
+        if restart_file != "" && n >= save_after && i < lcal
+            write_restart_file(restart_file, calculator, data["Points"], (energy,iscalculated),
                                data["cluster1"], data["cluster2"])
+            n = 0
         end
     end
 
-    push!(data["restart_energy"], take!(c))
-    energy = similar(data["Points"], Float64)
-    for col in data["restart_energy"]
-        energy[:, col[1]] = col[2]
-    end
     if save_file != ""
         write_save_file(save_file, calculator, data["Points"], energy,
                            data["cluster1"], data["cluster2"])
@@ -171,8 +181,9 @@ end
 
 
 """
-    calculate_with_different_method(fname, calculator::Calculator;
-                                    save_file="", restart_file="", pbar=true)
+calculate_with_different_method(fname, calculator::Calculator;
+                                     save_file="", restart_file="", pbar=true,
+                                     save_after=nworkers())
 
 With this function you can use already chosen points on to which to do energy calculation.
 
@@ -182,55 +193,51 @@ With this function you can use already chosen points on to which to do energy ca
 - `save_file=""` : save final results here, if not empty
 - `restart_file=""` : save restarts here, if not empty
 - `pbar=true` : show progress bar
+- `save_after=nworkers()` : make restart file when given ammount of points is calculated
 """
 function calculate_with_different_method(fname, calculator::Calculator;
-                                         save_file="", restart_file="", pbar=true)
+                                         save_file="", restart_file="", pbar=true,
+                                         save_after=nworkers())
     data = load_jld_data(fname)
     @info "File $(fname) loaded - calculating with different method"
     flush(stdout)
     lc1 = length(data["cluster1"])
-    c1_points = map(x -> x[1:lc1], data["Points"])
-    c2_points = map(x -> x[lc1+1:end], data["Points"])
-    #inputs = fill(calculator, size(c1_points)[1] )
-
-    ncol = length(c1_points[1,:])
-    t = max(trunc(Int,ceil(2*nworkers()/size(c1_points)[1])), 2)
-    l = min(t, ncol)
-    @debug "Using $(l) Channels"
-    c = Channel(l)
+    c1_points = map( x-> x[1:lc1], data["Points"])
+    c2_points = map( x-> x[lc1+1:end], data["Points"])
 
     if pbar
-        prog = Progress(length(c1_points)*getBSSEsteps(calculator.calculator) ,dt=1, desc="Calculating points:")
-        pchannel = RemoteChannel(()->Channel{Bool}(2*nworkers()), myid())
-        @async while take!(pchannel)
-            ProgressMeter.next!(prog)
-            flush(stderr)
-            flush(stdout)
-        end
-    else
-        pchannel = undef
+        prog = Progress(length(c1_points) ,dt=1, desc="Calculating points:")
     end
 
-    @async for collumn in 1:ncol
-        @async put!(c , (collumn ,pmap( (x,y) -> _calculate_points(calculator,x,y, pchannel=pchannel),
-                                        c1_points[:,collumn], c2_points[:,collumn] ) ))
-        sleep(0.1)  # make sure that FIFO queue is filled in right order
+    jobs = RemoteChannel(()->Channel(2*nworkers()))
+    results = RemoteChannel(()->Channel(2*nworkers()))
+
+    @async for i in eachindex(c1_points)
+        x = (calculator,c1_points[i], c2_points[i])
+        put!(jobs, (i,x) )
     end
 
-    tmp_energy = []
-    for collumn in 2:ncol
-        push!(tmp_energy, take!(c))
-        if restart_file != ""
-            write_restart_file(restart_file, calculator, data["Points"], tmp_energy,
-                               data["cluster1"], data["cluster2"])
-        end
+    for p in workers()
+        remote_do(parallel_work, p, jobs, results, _calculate_points)
     end
 
-    push!(tmp_energy, take!(c))
     energy = similar(c1_points, Float64)
-    for col in tmp_energy
-        energy[:, col[1]] = col[2]
+    iscalculated = falses(size(energy))
+    n = 0
+    lcal=length(c1_points)
+    for i in 1:length(c1_points)
+        i,tmp = take!(results)
+        energy[i] = tmp
+        iscalculated[i] = true
+        pbar && ProgressMeter.next!(prog)
+        n += 1
+        if restart_file != "" && n >= save_after && i < lcal
+            write_restart_file(restart_file, calculator, data["Points"], (energy,iscalculated),
+                               data["cluster1"], data["cluster2"])
+            n = 0
+        end
     end
+
     if save_file != ""
         write_save_file(save_file, calculator, data["Points"], energy,
                            data["cluster1"], data["cluster2"])
@@ -382,43 +389,43 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
         push!(i_range, t[end]:length(inputs))
     end
 
-    lc = min(length(i_range), trunc(Int, ceil(2*nworkers()/save_step)) )
-    c = Channel(lc)
-
     if pbar
-        prog = ProgressUnknown(dt=1, desc="Adaptive Sampling Points calculated:")
-        pchannel = RemoteChannel(()->Channel{Bool}(2*nworkers()), myid())
-        @async while take!(pchannel)
-            ProgressMeter.next!(prog)
-            flush(stderr)
-            flush(stdout)
-        end
-    else
-        pchannel = undef
+        prog = Progress(length(inputs) ,dt=1, desc="Calculating points:")
     end
 
-    @async for r in i_range
-        @async put!(c, pmap( x->_sample_and_calculate(x, pchannel=pchannel), inputs[r]) )
+    jobs = RemoteChannel(()->Channel(2*nworkers()))
+    results = RemoteChannel(()->Channel(2*nworkers()))
+
+    @async for x in inputs
+        put!(jobs, (1, (x,) ) )
     end
-    tmp = take!(c)
-    energy = hcat(map( x -> x["Energy"], tmp)...)
-    points = hcat(map( x -> x["Points"], tmp)...)
-    mindis = vcat(map( x -> x["Mindis"], tmp)...)
+
+    for p in workers()
+        remote_do(parallel_work, p, jobs, results, _sample_and_calculate)
+    end
+
+    _,tmp = take!(results)
+    energy = tmp["Energy"]
+    points = tmp["Points"]
+    mindis = tmp["Mindis"]
+    pbar && ProgressMeter.next!(prog)
     if save_file_name != ""
         @info "Saving data to file $(save_file_name)"
         write_save_file(save_file_name, inputs[1].cal, points, energy,
                         inputs[1].cl1, inputs[1].cl2)
     end
-
-    for i in i_range[2:end]
-        tmp = take!(c)
-        energy = hcat(energy, hcat(map( x -> x["Energy"], tmp)...) )
-        points = hcat(points, hcat(map( x -> x["Points"], tmp)...) )
-        mindis = vcat(mindis, vcat(map( x -> x["Mindis"], tmp)...) )
-        if save_file_name != ""
-            @info "Saving data to file $(save_file_name)"
-            write_save_file(save_file_name, inputs[1].cal, points, energy,
-                            inputs[1].cl1, inputs[1].cl2)
+    if length(inputs) > 1
+        for i in 2:length(inputs)
+            _,tmp = take!(results)
+            energy = hcat(energy, tmp["Energy"] )
+            points = hcat(points, tmp["Points"] )
+            mindis = vcat(mindis, tmp["Mindis"] )
+            pbar && ProgressMeter.next!(prog)
+            if save_file_name != ""
+                @info "Saving data to file $(save_file_name)"
+                write_save_file(save_file_name, inputs[1].cal, points, energy,
+                                inputs[1].cl1, inputs[1].cl2)
+            end
         end
     end
     #pbar && ProgressMeter.finish!(prog)
@@ -498,6 +505,15 @@ function _calculate_energy(cal::Calculator{Orca}, points; pchannel=undef)
     end
     return calculate_energy(cal, points, basename="base-$(myid())",
                                  id="Pid $(myid())", pchannel=pchannel)
+end
+
+
+function parallel_work(jobs, results, f)
+    while true
+        i,t = take!(jobs)
+        x = f(t...)
+        put!(results, (i,x))
+    end
 end
 
 end  # module restarttools

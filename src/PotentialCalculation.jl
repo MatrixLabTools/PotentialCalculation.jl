@@ -56,6 +56,7 @@ export m_electron,
        load_clusters_and_sample_input,
        load_data_file,
        load_restart_file,
+       test_work,
        write_restart_file,
        write_save_file
 
