@@ -87,7 +87,7 @@ function load_restart_file(fname)
             not_calculated = Set(1:size(data["Points"])[2])
             setdiff!(not_calculated, x[1] for x in data["restart_energy"])
             push!(data, "not_calculated"=>not_calculated)
-            iscalculated = trues(size(size(data["Points"])))
+            iscalculated = trues(size(data["Points"]))
             for i in not_calculated
                 iscalculated[:,i] .= false
             end
@@ -390,15 +390,7 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
     end
 
     if pbar
-        prog = ProgressUnknown(dt=1, desc="Adaptive Sampling Points calculated:")
-        pchannel = RemoteChannel(()->Channel{Bool}(2*nworkers()), myid())
-        @async while take!(pchannel)
-            ProgressMeter.next!(prog)
-            flush(stderr)
-            flush(stdout)
-        end
-    else
-        pchannel = undef
+        prog = Progress(length(inputs) ,dt=1, desc="Calculating points:")
     end
 
     jobs = RemoteChannel(()->Channel(2*nworkers()))
@@ -416,6 +408,7 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
     energy = tmp["Energy"]
     points = tmp["Points"]
     mindis = tmp["Mindis"]
+    pbar && ProgressMeter.next!(prog)
     if save_file_name != ""
         @info "Saving data to file $(save_file_name)"
         write_save_file(save_file_name, inputs[1].cal, points, energy,
@@ -427,6 +420,7 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
             energy = hcat(energy, tmp["Energy"] )
             points = hcat(points, tmp["Points"] )
             mindis = vcat(mindis, tmp["Mindis"] )
+            pbar && ProgressMeter.next!(prog)
             if save_file_name != ""
                 @info "Saving data to file $(save_file_name)"
                 write_save_file(save_file_name, inputs[1].cal, points, energy,
@@ -520,26 +514,6 @@ function parallel_work(jobs, results, f)
         x = f(t...)
         put!(results, (i,x))
     end
-end
-
-function test_work(t)
-    x = rand(16,4) .+ t
-    jobs = RemoteChannel(()->Channel(2*nworkers()))
-    results = RemoteChannel(()->Channel(2*nworkers()))
-    start = time()
-    @async for a in x
-        put!(jobs, a)
-    end
-    for p in workers()
-        remote_do(parallel_work, p, jobs, results)
-    end
-    out=[]
-    for i in 1:length(x)
-        b = take!(results)
-        push!(out,b)
-        println(i, " time: ", time()-start)
-    end
-    return out
 end
 
 end  # module restarttools
