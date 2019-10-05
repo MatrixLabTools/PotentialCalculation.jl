@@ -155,13 +155,13 @@ function continue_calculation(fname, calculator::Calculator; save_file="", resta
     end
 
     n = 0
-    for i in 1:lcal
+    for j in 1:lcal
         i,tmp = take!(results)
         energy[i] = tmp
         iscalculated[i] = true
         pbar && ProgressMeter.next!(prog)
         n += 1
-        if restart_file != "" && n >= save_after && i < lcal
+        if restart_file != "" && n >= save_after && j < lcal
             write_restart_file(restart_file, calculator, data["Points"], (energy,iscalculated),
                                data["cluster1"], data["cluster2"])
             n = 0
@@ -225,13 +225,13 @@ function calculate_with_different_method(fname, calculator::Calculator;
     iscalculated = falses(size(energy))
     n = 0
     lcal=length(c1_points)
-    for i in 1:length(c1_points)
+    for j in 1:lcal
         i,tmp = take!(results)
         energy[i] = tmp
         iscalculated[i] = true
         pbar && ProgressMeter.next!(prog)
         n += 1
-        if restart_file != "" && n >= save_after && i < lcal
+        if restart_file != "" && n >= save_after && j < lcal
             write_restart_file(restart_file, calculator, data["Points"], (energy,iscalculated),
                                data["cluster1"], data["cluster2"])
             n = 0
