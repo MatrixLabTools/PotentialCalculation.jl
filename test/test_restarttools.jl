@@ -31,7 +31,7 @@ pbar=true
 
 testrestarts = false
 
-if ( Sys.which("orca") != Nothing ) && ( Sys.which("orca_scf") != Nothing )
+if Sys.which("orca") != nothing
     @info "Orca binary found. Testing ORCA."
     @testset "Orca" begin
         ca = Calculator{Orca}("blyp d3bj TIGHTSCF", "def2-svp", Orca())
@@ -63,7 +63,7 @@ catch
     global testpsi4 = false
     @warn "Psi4 was not detected. Skipping testing. Psi4 backend is not working!"
 end
-if testpsi4
+if  testpsi4
     @info "Psi4 found. Testing Psi4."
     @testset "Psi4" begin
         ca = Calculator{Psi4}("blyp-d3bj", "def2-svp",Psi4(memory="1000MiB", nthreads=2))
