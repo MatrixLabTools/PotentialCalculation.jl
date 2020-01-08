@@ -1,4 +1,5 @@
 using Test
+using PyCall
 
 using Distributed
 
@@ -28,50 +29,74 @@ end
 
 pbar=true
 
+testrestarts = true
 
+if Sys.which("orca") != Nothing
+    @info "Orca binary found. Testing ORCA."
+    @testset "Orca" begin
+        ca = Calculator{Orca}("blyp d3bj", "def2-svp", Orca())
 
-@testset "Orca" begin
-    ca = Calculator{Orca}("blyp d3bj", "def2-svp", Orca())
+        input1=load_clusters_and_make_input(xyzname, Ar, ca)
+        inputs=load_clusters_and_sample_input(xyzname, N2, ca, 2, npoints=5)
+        inputss=load_clusters_and_sample_input(xyzname, xyzname, ca, 2)
 
-    input1=load_clusters_and_make_input(xyzname, Ar, ca)
-    inputs=load_clusters_and_sample_input(xyzname, N2, ca, 2, npoints=5)
-    inputss=load_clusters_and_sample_input(xyzname, xyzname, ca, 2)
+        data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)
+        data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
+        data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
 
-    data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)
-    data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
-    data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
-
-    @test all(isapprox.(data1["Energy"], data2["Energy"], atol=2E-6))
-    @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
-    @test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
-end
-
-@testset "Psi4" begin
-    ca = Calculator{Psi4}("blyp-d3bj", "def2-svp",Psi4(memory="1000MiB", nthreads=2))
-
-    input1=load_clusters_and_make_input(xyzname, Ar, ca)
-    inputs=load_clusters_and_sample_input(xyzname, N2, ca, 2, npoints=5)
-    inputss=load_clusters_and_sample_input(xyzname, xyzname, ca, 2)
-
-    data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)
-    data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
-    data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
-
-    calculate_energy(ca, N2)
-    calculate_energy(ca, [N2,N2])
-    @test all(isapprox.(data1["Energy"], data2["Energy"], atol=2E-6))
-    @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
-    @test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
-end
-
-@testset "restarttools" begin
-    savedata = load_data_file(sname)
-
-    ldata=load_jld_data(sname)
-    for fn in [fname, sname]
-        ldata=load_jld_data(fn)
-        @test length(ldata["cluster1"]) + length(ldata["cluster2"]) == length(ldata["Points"][1])
+        @test all(isapprox.(data1["Energy"], data2["Energy"], atol=2E-6))
+        @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
+        @test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
     end
+else
+    @warn "Orca binary not found from PATH. Skipping tests. ORCA backend might not work!"
+    testrestarts = false
+end
+
+
+
+testpsi4 = true
+
+try
+    pyimport("psi4")
+catch
+    @warn "Psi4 was not detected. Skipping testing. Psi4 backend is not working!"
+    testpsi4 = false
+    testrestarts = false
+end
+if testpsi4
+    @info "Psi4 found. Testing Psi4."
+    @testset "Psi4" begin
+        ca = Calculator{Psi4}("blyp-d3bj", "def2-svp",Psi4(memory="1000MiB", nthreads=2))
+
+        input1=load_clusters_and_make_input(xyzname, Ar, ca)
+        inputs=load_clusters_and_sample_input(xyzname, N2, ca, 2, npoints=5)
+        inputss=load_clusters_and_sample_input(xyzname, xyzname, ca, 2)
+
+        data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)
+        data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
+        data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
+
+        calculate_energy(ca, N2)
+        calculate_energy(ca, [N2,N2])
+        @test all(isapprox.(data1["Energy"], data2["Energy"], atol=2E-6))
+        @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
+        @test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
+    end
+end
+
+if testrestarts
+    @testset "restarttools" begin
+        savedata = load_data_file(sname)
+
+        ldata=load_jld_data(sname)
+        for fn in [fname, sname]
+            ldata=load_jld_data(fn)
+            @test length(ldata["cluster1"]) + length(ldata["cluster2"]) == length(ldata["Points"][1])
+        end
+    end
+else
+    @warn "Restarting calculations is not tested!"
 end
 
 rm(fname)
