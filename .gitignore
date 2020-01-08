@@ -3,3 +3,4 @@
 submit-coverage.sh
 local
 timer.dat
+docs/build/
