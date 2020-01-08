@@ -1,5 +1,9 @@
 # PotentialCalculation.jl
+[![Build Status](https://travis-ci.org/MatrixLabTools/PotentialCalculation.jl.svg?branch=master)](https://travis-ci.org/MatrixLabTools/PotentialCalculation.jl)
 [![codecov](https://codecov.io/gh/MatrixLabTools/PotentialCalculation.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/MatrixLabTools/PotentialCalculation.jl)
+
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://MatrixLabTools.github.io/PotentialCalculation.jl/stable)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://MatrixLabTools.github.io/PotentialCalculation.jl/dev/)
 
 A Julia package to calculate potential energy between two molecules.
 
