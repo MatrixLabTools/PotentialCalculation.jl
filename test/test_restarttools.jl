@@ -29,12 +29,12 @@ end
 
 pbar=true
 
-testrestarts = true
+testrestarts = false
 
 if Sys.which("orca") != Nothing
     @info "Orca binary found. Testing ORCA."
     @testset "Orca" begin
-        ca = Calculator{Orca}("blyp d3bj", "def2-svp", Orca())
+        ca = Calculator{Orca}("blyp d3bj TIGHTSCF", "def2-svp", Orca())
 
         input1=load_clusters_and_make_input(xyzname, Ar, ca)
         inputs=load_clusters_and_sample_input(xyzname, N2, ca, 2, npoints=5)
@@ -48,9 +48,9 @@ if Sys.which("orca") != Nothing
         @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
         @test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
     end
+    testrestarts = true
 else
     @warn "Orca binary not found from PATH. Skipping tests. ORCA backend might not work!"
-    testrestarts = false
 end
 
 
@@ -60,9 +60,8 @@ testpsi4 = true
 try
     pyimport("psi4")
 catch
+    global testpsi4 = false
     @warn "Psi4 was not detected. Skipping testing. Psi4 backend is not working!"
-    testpsi4 = false
-    testrestarts = false
 end
 if testpsi4
     @info "Psi4 found. Testing Psi4."
@@ -83,7 +82,9 @@ if testpsi4
         @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
         @test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
     end
+    testrestarts = true
 end
+
 
 if testrestarts
     @testset "restarttools" begin
@@ -95,11 +96,10 @@ if testrestarts
             @test length(ldata["cluster1"]) + length(ldata["cluster2"]) == length(ldata["Points"][1])
         end
     end
+    rm(fname)
+    rm(rname)
+    rm(sname)
+    rm(xyzname)
 else
-    @warn "Restarting calculations is not tested!"
+    @warn "Restarting calculations was not tested!"
 end
-
-rm(fname)
-rm(rname)
-rm(sname)
-rm(xyzname)
