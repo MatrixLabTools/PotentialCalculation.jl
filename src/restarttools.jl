@@ -271,6 +271,7 @@ Differs from [`load_clusters_and_sample_input`](@ref) by taking every point from
 function load_clusters_and_make_input(cluster1::String, cluster2::Cluster, calculator;
                                       max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
+    @warn "Deprecated use createinputs instead"
     cluster1 = read_xyz(cluster1)
 
     return  [InputAdaptiveSampler(calculator, c, cluster2,
@@ -303,6 +304,7 @@ function load_clusters_and_make_input(cluster1::Cluster, cluster2::Cluster, calc
                                       nlines=1, max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
 
+    @warn "Deprecated use createinputs instead"
     return  [InputAdaptiveSampler(calculator, cluster1, cluster2,
                 1, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
                 sstep=sstep, startdistance=startdistance) for _ in 1:nlines ]
@@ -332,6 +334,7 @@ that can then be used with [`calculate_adaptive_sample_inputs`](@ref) to calcula
 function load_clusters_and_sample_input(cluster1::String, cluster2, calculator, nsamples;
                                       max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
+    @warn "Deprecated use createinputs instead"
     cluster1 = read_xyz(cluster1)
 
     return  [InputAdaptiveSampler(calculator, rand(cluster1), cluster2,
@@ -360,6 +363,7 @@ function load_clusters_and_sample_input(cluster1::String, cluster2::String, calc
 function load_clusters_and_sample_input(cluster1::String, cluster2::String, calculator, nsamples;
                                       nlines=1, max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
+    @warn "Deprecated use createinputs instead"
     cluster1 = read_xyz(cluster1)
     cluster2 = read_xyz(cluster2)
 
