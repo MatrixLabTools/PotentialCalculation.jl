@@ -40,8 +40,8 @@ if Sys.which("orca") != nothing
         inputs=createinputs(xyzname, N2, ca; npoints=5)
         inputss=createinputs(xyzname, xyzname, ca)
 
-        data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)
-        data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
+        data1=calculate_potential(inputs, save_file=fname, pbar=pbar)
+        data2=calculate_potential(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
         data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
 
         @test all(isapprox.(data1["Energy"], data2["Energy"], atol=2E-6))
@@ -72,8 +72,8 @@ if  testpsi4
         inputs=createinputs(xyzname, N2, ca; npoints=5)
         inputss=createinputs(xyzname, xyzname, ca)
 
-        data1=calculate_adaptive_sample_inputs(inputs, save_file_name=fname, pbar=pbar)
-        data2=calculate_with_different_method(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
+        data1=calculate_potential(inputs, save_file=fname, pbar=pbar)
+        data2=calculate_potential(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
         data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
 
         calculate_energy(ca, N2)

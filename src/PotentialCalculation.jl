@@ -51,6 +51,7 @@ export m_electron,
 
        calculate_adaptive_sample_inputs,
        calculate_energy_for_xyzfile,
+       calculate_potential,
        calculate_with_different_method,
        continue_calculation,
        createinputs,

@@ -41,7 +41,7 @@ with various distances and orientations from each other.
 
 ```julia
 
-#Creating calculation method
+# Creating calculation method
 mp2 = Calculator("RI-MP2 RIJK TIGHTSCF",
                  "aug-cc-pVTZ aug-cc-pVTZ/C def2/JK",
                   Orca()
@@ -55,13 +55,13 @@ trajfile="Some trajectory.xyz"
 
 # Create input for calculations
 inputs = createinputs(trajfile, Ar, mp2;
-               nsaples=32,  #How many lines are calculated
-               max_e=10000, #Maximum energy in cm⁻¹ -
+               nsaples=32,  # How many lines are calculated
+               max_e=10000, # Maximum energy in cm⁻¹ -
                             #   limit to areas where energy is less than this
-               npoints=50)  #Number of points per line
+               npoints=50)  # Number of points per line
 
 # Do calculation
-data = calculate_adaptive_sample_inputs(inputs, save_file_name="save file")
+data = calculate_potential(inputs, save_file="save file")
 ```
 
 New calculations with different method can be done on previous points.
@@ -73,10 +73,11 @@ ccf12 = Calculator("CCSD(T)-F12/RI TIGHTSCF",
                    Orca(maxmem=3500)
                   )
 
-data2 = calculate_with_different_method("previous results file",
-                                        ccf12,
-                                        save_file="new save file",
-                                        restart_file="restart file")
+data2 = calculate_potential("previous results file",
+                            ccf12,  # Calculate with this method now
+                            save_file="new save file",
+                            restart_file="restart file"
+                          )
 ```
 
 To restart calculations from restart file.
