@@ -12,13 +12,17 @@ export load_jld_data,
        save_jld_data
 
 
-using JLD, FileIO
-using ..clusters, ..atoms, ..molecules
+using JLD
+using FileIO
+
+using ..atoms
+using ..clusters
+using ..molecules
 
 
 
 """
-save_jld_data(fname, data::Dict)
+save_jld_data(fname::AbstractString, data::Dict)
 
 Saves given data to file in jld format.
 
@@ -31,7 +35,7 @@ Following keys are scanned from `data` and saved if present
 - Energy
 - restart_energy
 """
-function save_jld_data(fname, data::Dict)
+function save_jld_data(fname::AbstractString, data::Dict)
     k = keys(data)
     jldopen(fname, "w") do file
         if haskey(data,"Method")
@@ -68,11 +72,11 @@ end
 
 
 """
-load_jld_data(fname)
+load_jld_data(fname::AbstractString)
 
 Loads data from file and returns it as a [`Dict`](@ref)
 """
-function load_jld_data(fname)
+function load_jld_data(fname::AbstractString)
     data = load(fname)
     return data
 end
@@ -80,11 +84,11 @@ end
 
 
 """
-read_xyz(fname)
+read_xyz(fname::AbstractString)
 
 Reads xyz file and returns it as an Array of [`Cluster`](@ref)
 """
-function read_xyz(fname)
+function read_xyz(fname::AbstractString)
     lines = Vector{String}()
     open(fname, "r") do file
         lines = readlines(file)
@@ -109,7 +113,7 @@ function read_xyz(fname)
             xyz[2,na] = parse(Float64, cont[3])
             xyz[3,na] = parse(Float64, cont[4])
         end
-        push!(clusters, deepcopy(Cluster{AtomOnlySymbol}(xyz, atoms)))
+        push!(clusters, deepcopy(Cluster(xyz, atoms)))
     end
     return clusters
 end

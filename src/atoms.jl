@@ -52,12 +52,12 @@ Atom that has symbol and mass
 struct AtomWithMass <: AbstractAtomWithMass
     id::String
     mass::Float64
-    AtomWithMass(id::String) = new(id,masses[id])
-    AtomWithMass(id::String, mass::Real) = new(id,mass)
+    AtomWithMass(id::AbstractString) = new(id,masses[id])
+    AtomWithMass(id::AbstractString, mass::Real) = new(id,mass)
 end
 
 
-Base.convert(t::Type{<:AbstractAtom}, x::String) = t(x)
+Base.convert(t::Type{<:AbstractAtom}, x::AbstractString) = t(x)
 Base.convert(t::Type{<:AbstractAtom}, x::AbstractAtom) = t(x.id)
 
 end #module

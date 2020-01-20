@@ -211,6 +211,7 @@ Structure used to help use of adaptive line samplers
 - `startdistance`     : distance where search is started
 """
 mutable struct InputAdaptiveSampler
+    # TODO clean this - it is way too messy now
     cal
     cl1
     cl2

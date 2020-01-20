@@ -6,7 +6,7 @@ using PotentialCalculation.clusters
 
 
 @testset "clusters" begin
-    formic_acid=Cluster{AtomOnlySymbol}(
+    formic_acid=Cluster(
      [-6.7041359778      1.3501192944      0.0102209137
     -5.3688853815      1.2229556023      0.0440598937
     -7.2470157373      2.4374213225      0.0651311769
@@ -14,7 +14,7 @@ using PotentialCalculation.clusters
      -7.2001330967      0.3718768293     -0.0703451879]',
       AtomOnlySymbol.(["C", "O", "O", "H", "H"]) )
 
-     Ar = Cluster{AtomOnlySymbol}(rand(3), AtomOnlySymbol("Ar"))
+     Ar = Cluster(rand(3), AtomOnlySymbol("Ar"))
 
      nf = ClusterNoSymbols(rand(3,5))
      nar = ClusterNoSymbols(rand(3))
@@ -84,9 +84,9 @@ using PotentialCalculation.clusters
      @test_throws DimensionMismatch ClusterNoSymbols(rand(2,3))
      @test_throws DimensionMismatch ClusterNoSymbols(rand(4,2))
 
-     @test_throws DimensionMismatch Cluster{AtomOnlySymbol}(rand(2), [AtomOnlySymbol("H")])
-     @test_throws DimensionMismatch Cluster{AtomOnlySymbol}(rand(2), AtomOnlySymbol("H"))
-     @test_throws DimensionMismatch Cluster{AtomOnlySymbol}(rand(3),AtomOnlySymbol.(["H", "O"]))
-     @test_throws DimensionMismatch Cluster{AtomOnlySymbol}(rand(3,3),AtomOnlySymbol.(["H", "O"]))
-     @test_throws DimensionMismatch Cluster{AtomOnlySymbol}(rand(4,2),AtomOnlySymbol.(["H", "O"]))
+     @test_throws DimensionMismatch Cluster(rand(2), [AtomOnlySymbol("H")])
+     @test_throws DimensionMismatch Cluster(rand(2), AtomOnlySymbol("H"))
+     @test_throws DimensionMismatch Cluster(rand(3),AtomOnlySymbol.(["H", "O"]))
+     @test_throws DimensionMismatch Cluster(rand(3,3),AtomOnlySymbol.(["H", "O"]))
+     @test_throws DimensionMismatch Cluster(rand(4,2),AtomOnlySymbol.(["H", "O"]))
 end

@@ -29,7 +29,7 @@ Molecule representation
 """
 struct Molecule{T<:AbstractAtom} <: AbstractMolecule
     atoms::Vector{T}
-    function Molecule{T}(atoms::Vector{T}) where T <:AbstractAtom
+    function Molecule{T}(atoms::AbstractVector{T}) where T <:AbstractAtom
          new(atoms)
     end
     function Molecule{T}(atomnames) where T <:AbstractAtom
