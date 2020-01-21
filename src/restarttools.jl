@@ -495,8 +495,8 @@ Parallelisation is done over `nsamples`, thus it is recommended for it to be mul
 number workers processes.
 
 # Arguments
-- `cluster1::Union{AbstractString,Cluster}` : xyz-file name or [`Cluster`](@ref) to be used in sampling
-- `cluster2::Union{AbstractString,Cluster}` : xyz-file name or [`Cluster`](@ref) to be used in sampling
+- `cluster1` : something that can be interpreted as [`Cluster`](@ref) or an Array of it
+- `cluster2` : something that can be interpreted as [`Cluster`](@ref) or an Array of it
 - `calculator::Calculator` : [`Calculator`](@ref) used in sampling
 
 # Keywords
@@ -526,14 +526,21 @@ function createinputs(cluster1::AbstractString,
     c1 = read_xyz(cluster1)
     c2 = read_xyz(cluster2)
 
-    return  [InputAdaptiveSampler(calculator, rand(c1), rand(c2), nlines, max_e;
-                                  unit=unit, npoints=npoints, maxdis=maxdis,
-                                  sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+    return  createinputs(c1, c2, calculator;
+                nlines=nlines,
+                nsamples=nsamples,
+                max_e=max_e,
+                unit=unit,
+                npoints=npoints,
+                maxdis=maxdis,
+                sstep=sstep,
+                startdistance=startdistance
+            )
 end
 
 
 function createinputs(cluster1::AbstractString,
-                cluster2::AbstractCluster,
+                cluster2,
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
@@ -547,13 +554,20 @@ function createinputs(cluster1::AbstractString,
 
     c1 = read_xyz(cluster1)
 
-    return  [InputAdaptiveSampler(calculator, rand(c1), cluster2, nlines, max_e;
-                                  unit=unit, npoints=npoints, maxdis=maxdis,
-                                  sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+    return  createinputs(c1, cluster2, calculator;
+                nlines=nlines,
+                nsamples=nsamples,
+                max_e=max_e,
+                unit=unit,
+                npoints=npoints,
+                maxdis=maxdis,
+                sstep=sstep,
+                startdistance=startdistance
+            )
 end
 
 
-function createinputs(cluster1::AbstractCluster,
+function createinputs(cluster1,
                 cluster2::AbstractString,
                 calculator::Calculator;
                 nlines=1,
@@ -568,9 +582,16 @@ function createinputs(cluster1::AbstractCluster,
 
     c2 = read_xyz(cluster2)
 
-    return  [InputAdaptiveSampler(calculator, cluster1, rand(c2), nlines, max_e;
-                                  unit=unit, npoints=npoints, maxdis=maxdis,
-                                  sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+    return  createinputs(cluster1, c2, calculator;
+                nlines=nlines,
+                nsamples=nsamples,
+                max_e=max_e,
+                unit=unit,
+                npoints=npoints,
+                maxdis=maxdis,
+                sstep=sstep,
+                startdistance=startdistance
+            )
 end
 
 function createinputs(cluster1::AbstractCluster,
@@ -591,6 +612,65 @@ function createinputs(cluster1::AbstractCluster,
                                   unit=unit, npoints=npoints, maxdis=maxdis,
                                   sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
+
+function createinputs(cluster1::AbstractCluster,
+                cluster2::AbstractArray{<:AbstractCluster},
+                calculator::Calculator;
+                nlines=1,
+                nsamples=2,
+                max_e=15000,
+                unit="cm-1",
+                npoints=10,
+                maxdis=9.0,
+                sstep=0.1,
+                startdistance=3.0
+               )
+
+
+    return  [InputAdaptiveSampler(calculator, cluster1, rand(cluster2), nlines, max_e;
+                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+end
+
+
+function createinputs(cluster1::AbstractArray{<:AbstractCluster},
+                cluster2::AbstractCluster,
+                calculator::Calculator;
+                nlines=1,
+                nsamples=2,
+                max_e=15000,
+                unit="cm-1",
+                npoints=10,
+                maxdis=9.0,
+                sstep=0.1,
+                startdistance=3.0
+               )
+
+
+    return  [InputAdaptiveSampler(calculator, rand(cluster1), cluster2, nlines, max_e;
+                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+end
+
+function createinputs(cluster1::AbstractArray{<:AbstractCluster},
+                cluster2::AbstractArray{<:AbstractCluster},
+                calculator::Calculator;
+                nlines=1,
+                nsamples=2,
+                max_e=15000,
+                unit="cm-1",
+                npoints=10,
+                maxdis=9.0,
+                sstep=0.1,
+                startdistance=3.0
+               )
+
+
+    return  [InputAdaptiveSampler(calculator, rand(cluster1), rand(cluster2), nlines, max_e;
+                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+end
+
 
 """
     _sample_and_calculate(inputs; pchannel=undef )
