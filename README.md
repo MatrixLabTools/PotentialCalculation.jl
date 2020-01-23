@@ -54,7 +54,7 @@ Ar = Cluster(rand(3), AtomOnlySymbol("Ar"))
 trajfile="Some trajectory.xyz"
 
 # Create input for calculations
-inputs = createinputs(trajfile, Ar, mp2;
+inputs = create_inputs(trajfile, Ar, mp2;
                nsaples=32,  # How many lines are calculated
                max_e=10000, # Maximum energy in cm⁻¹ -
                             #   limit to areas where energy is less than this

@@ -11,7 +11,7 @@ export calculate_adaptive_sample_inputs,
        calculate_with_different_method,
        calculate_potential,
        continue_calculation,
-       createinputs,
+       create_inputs,
        load_clusters_and_make_input,
        load_clusters_and_sample_input,
        load_data_file,
@@ -301,7 +301,7 @@ Differs from [`load_clusters_and_sample_input`](@ref) by taking every point from
 function load_clusters_and_make_input(cluster1::String, cluster2::Cluster, calculator;
                                       max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
-    @warn "load_clusters_and_make_input deprecated use createinputs instead"
+    @warn "load_clusters_and_make_input deprecated use create_inputs instead"
     cluster1 = read_xyz(cluster1)
 
     return  [InputAdaptiveSampler(calculator, c, cluster2,
@@ -334,7 +334,7 @@ function load_clusters_and_make_input(cluster1::Cluster, cluster2::Cluster, calc
                                       nlines=1, max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
 
-    @warn "load_clusters_and_make_input deprecated use createinputs instead"
+    @warn "load_clusters_and_make_input deprecated use create_inputs instead"
     return  [InputAdaptiveSampler(calculator, cluster1, cluster2,
                 1, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
                 sstep=sstep, startdistance=startdistance) for _ in 1:nlines ]
@@ -364,7 +364,7 @@ that can then be used with [`calculate_adaptive_sample_inputs`](@ref) to calcula
 function load_clusters_and_sample_input(cluster1::String, cluster2, calculator, nsamples;
                                       max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
-    @warn "load_clusters_and_sample_input deprecated use createinputs instead"
+    @warn "load_clusters_and_sample_input deprecated use create_inputs instead"
     cluster1 = read_xyz(cluster1)
 
     return  [InputAdaptiveSampler(calculator, rand(cluster1), cluster2,
@@ -393,7 +393,7 @@ function load_clusters_and_sample_input(cluster1::String, cluster2::String, calc
 function load_clusters_and_sample_input(cluster1::String, cluster2::String, calculator, nsamples;
                                       nlines=1, max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
-    @warn "load_clusters_and_sample_input is deprecated use createinputs instead"
+    @warn "load_clusters_and_sample_input is deprecated use create_inputs instead"
     cluster1 = read_xyz(cluster1)
     cluster2 = read_xyz(cluster2)
 
@@ -410,7 +410,7 @@ end
 Uses [`adaptive_line_sampler`](@ref) to `inputs` in distributed fashion
 
 # Arguments
-- `inputs` : calculation inputs array (eg. from [`createinputs`](@ref))
+- `inputs` : calculation inputs array (eg. from [`create_inputs`](@ref))
 - `save_after` : file where data saved
 - `save_after=nworkers()` : number of calculated items before data is saved
 - `pbar=true` : show progress bar
@@ -479,7 +479,7 @@ function calculate_adaptive_sample_inputs(inputs::AbstractArray{InputAdaptiveSam
 
 
 """
-    createinputs(cluster1, cluster2, calculator::Calculator;  kwargs...)
+    create_inputs(cluster1, cluster2, calculator::Calculator;  kwargs...)
 
 
 
@@ -510,7 +510,7 @@ number workers processes.
 - unit="cm-1" : unit for `max_e`
 
 """
-function createinputs(cluster1::AbstractString,
+function create_inputs(cluster1::AbstractString,
                 cluster2::AbstractString,
                 calculator::Calculator;
                 nlines=1,
@@ -526,7 +526,7 @@ function createinputs(cluster1::AbstractString,
     c1 = read_xyz(cluster1)
     c2 = read_xyz(cluster2)
 
-    return  createinputs(c1, c2, calculator;
+    return  create_inputs(c1, c2, calculator;
                 nlines=nlines,
                 nsamples=nsamples,
                 max_e=max_e,
@@ -539,7 +539,7 @@ function createinputs(cluster1::AbstractString,
 end
 
 
-function createinputs(cluster1::AbstractString,
+function create_inputs(cluster1::AbstractString,
                 cluster2,
                 calculator::Calculator;
                 nlines=1,
@@ -554,7 +554,7 @@ function createinputs(cluster1::AbstractString,
 
     c1 = read_xyz(cluster1)
 
-    return  createinputs(c1, cluster2, calculator;
+    return  create_inputs(c1, cluster2, calculator;
                 nlines=nlines,
                 nsamples=nsamples,
                 max_e=max_e,
@@ -567,7 +567,7 @@ function createinputs(cluster1::AbstractString,
 end
 
 
-function createinputs(cluster1,
+function create_inputs(cluster1,
                 cluster2::AbstractString,
                 calculator::Calculator;
                 nlines=1,
@@ -582,7 +582,7 @@ function createinputs(cluster1,
 
     c2 = read_xyz(cluster2)
 
-    return  createinputs(cluster1, c2, calculator;
+    return  create_inputs(cluster1, c2, calculator;
                 nlines=nlines,
                 nsamples=nsamples,
                 max_e=max_e,
@@ -594,7 +594,7 @@ function createinputs(cluster1,
             )
 end
 
-function createinputs(cluster1::AbstractCluster,
+function create_inputs(cluster1::AbstractCluster,
                 cluster2::AbstractCluster,
                 calculator::Calculator;
                 nlines=1,
@@ -613,7 +613,7 @@ function createinputs(cluster1::AbstractCluster,
                                   sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
 
-function createinputs(cluster1::AbstractCluster,
+function create_inputs(cluster1::AbstractCluster,
                 cluster2::AbstractArray{<:AbstractCluster},
                 calculator::Calculator;
                 nlines=1,
@@ -633,7 +633,7 @@ function createinputs(cluster1::AbstractCluster,
 end
 
 
-function createinputs(cluster1::AbstractArray{<:AbstractCluster},
+function create_inputs(cluster1::AbstractArray{<:AbstractCluster},
                 cluster2::AbstractCluster,
                 calculator::Calculator;
                 nlines=1,
@@ -652,7 +652,7 @@ function createinputs(cluster1::AbstractArray{<:AbstractCluster},
                                   sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
 
-function createinputs(cluster1::AbstractArray{<:AbstractCluster},
+function create_inputs(cluster1::AbstractArray{<:AbstractCluster},
                 cluster2::AbstractArray{<:AbstractCluster},
                 calculator::Calculator;
                 nlines=1,

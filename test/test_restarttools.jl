@@ -36,9 +36,9 @@ if Sys.which("orca") != nothing
     @testset "Orca" begin
         ca = Calculator("blyp d3bj TIGHTSCF", "def2-svp", Orca())
 
-        input1=createinputs(xyzname, Ar, ca)
-        inputs=createinputs(xyzname, N2, ca; npoints=5)
-        inputss=createinputs(xyzname, xyzname, ca)
+        input1=create_inputs(xyzname, Ar, ca)
+        inputs=create_inputs(xyzname, N2, ca; npoints=5)
+        inputss=create_inputs(xyzname, xyzname, ca)
 
         data1=calculate_potential(inputs, save_file=fname, pbar=pbar)
         data2=calculate_potential(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
@@ -68,9 +68,9 @@ if  testpsi4
     @testset "Psi4" begin
         ca = Calculator("blyp-d3bj", "def2-svp",Psi4(memory="1000MiB", nthreads=2))
 
-        input1=createinputs(xyzname, Ar, ca)
-        inputs=createinputs(xyzname, N2, ca; npoints=5)
-        inputss=createinputs(xyzname, xyzname, ca)
+        input1=create_inputs(xyzname, Ar, ca)
+        inputs=create_inputs(xyzname, N2, ca; npoints=5)
+        inputss=create_inputs(xyzname, xyzname, ca)
 
         data1=calculate_potential(inputs, save_file=fname, pbar=pbar)
         data2=calculate_potential(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
