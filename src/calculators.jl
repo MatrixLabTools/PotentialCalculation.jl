@@ -184,6 +184,8 @@ Calculates energy for given clusters.
 # Arguments
 - `cal::Calculator` : calculation information
 - `points` : collection of [`Cluster`](@ref) which energy is calculated
+
+# Keywords
 - `basename="base"` : base name for input/ouput files
 - `ghost=undef` : indices for atoms considered as ghost
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
@@ -218,6 +220,8 @@ Calculates energy for given cluster.
 # Arguments
 - `cal::Calculator` : calculation information
 - `point::Cluster` : cluster which energy is calculated
+
+# Keywords
 - `basename="base"` : base name for input/ouput files
 - `ghost=undef` : indices for atoms considered as ghost
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
@@ -251,6 +255,8 @@ Calculates energy of combined clusters taking into account basis set superpositi
 - `cal::Calculator` : calcualation information
 - `c1` : collection of clusters
 - `c2` : collection of clusters
+
+# Keywords
 - `basename="base"` : base name for input/ouput files
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
 - `pchannel=undef`  : (Remote)Channel where progess information is added
@@ -276,6 +282,8 @@ Calculates energy of combined cluster taking into account basis set superpositio
 - `cal::Calculator` : calcualation information
 - `c1::Cluster` : cluster
 - `c2::Cluster` : cluster
+
+# Keywords
 - `basename="base"` : base name for input/ouput files
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
 - `pchannel=undef`  : (Remote)Channel where progess information is added
@@ -304,7 +312,7 @@ Deletes files that calculations produced
 function clean_calculation_files(;dir=".", basename="base")
     filenames=readdir(dir)
     # There is a  possible exploit here related to basename
-    i = map( x -> occursin(basename, x), filenames)
+    i = map( x -> occursin(basename*".", x) || occursin(basename*"_", x), filenames)
     rm.(filenames[i])
 end
 
