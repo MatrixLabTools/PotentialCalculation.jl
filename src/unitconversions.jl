@@ -12,7 +12,7 @@ export change_energy_unit,
 Changes energy from hartrees to given unit
 
 Suported units include:
-  * cm^-1
+  * cm^-1/cm⁻¹/cm-1
   * eV
   * hartree
   * kcal/mol
@@ -24,7 +24,7 @@ If unit is not recognized defaults to hartree.
 Source is [Wikipedia](https://en.wikipedia.org/wiki/Hartree)
 """
 function energy_to(e, unit)
-    if unit in ["cm-1", "cm^-1"]
+    if unit in ["cm-1", "cm^-1", "cm⁻¹"]
         return e*219474.6313702
     elseif unit in ["ev", "eV"]
         return e*27.21138602
@@ -45,7 +45,7 @@ end
 Changes given energy unit to hartree
 
 Suported units include:
-  * cm^-1
+  * cm^-1/cm⁻¹/cm-1
   * eV
   * hartree
   * kcal/mol
@@ -57,7 +57,7 @@ If unit is not recognized defaults to hartree.
 Source is [Wikipedia](https://en.wikipedia.org/wiki/Hartree)
 """
 function energy_from(e, unit)
-    if unit in ["cm-1", "cm^-1"]
+    if unit in ["cm-1", "cm^-1", "cm⁻¹"]
         return e/219474.6313702
     elseif unit in ["ev", "eV"]
         return e/27.21138602
@@ -79,7 +79,7 @@ end
 Changes energy unit
 
 Suported units include:
-  * cm^-1
+  * cm^-1/cm⁻¹/cm-1
   * eV
   * hartree
   * kcal/mol

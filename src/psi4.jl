@@ -32,6 +32,7 @@ function initpsi4(;memory="500 MiB", quiet=true, nthreads=1)
     gPsi4.set_memory(memory)
     nthreads > 1 && gPsi4.set_num_threads(nthreads)
 end
+
 """
     mutable struct Psi4 <: AbstractCalculationProgram
 
@@ -48,7 +49,8 @@ mutable struct Psi4 <: AbstractCalculationProgram
 end
 
 
-function calculators.calculate_energy(cal::Calculator{Psi4}, point::Cluster; basename="base", ghost=undef, id="", pchannel=undef)
+function calculators.calculate_energy(cal::Calculator{Psi4}, point::Cluster;
+                                      basename="base", ghost=undef, id="", pchannel=undef)
     ! gpsi4init && initpsi4(memory=cal.calculator.memory)
     s=sprint( (io, x) -> print_xyz(io,x, printheader=false), point)
     c = gPsi4.geometry(s)
@@ -58,13 +60,14 @@ function calculators.calculate_energy(cal::Calculator{Psi4}, point::Cluster; bas
 end
 
 
-function calculators.calculate_energy(cal::Calculator{Psi4}, points; basename="base", ghost=undef, id="", pchannel=undef)
+function calculators.calculate_energy(cal::Calculator{Psi4}, points;
+                                      basename="base", ghost=undef, id="", pchannel=undef)
     return map( x -> calculate_energy(cal, x, basename=basename, ghost=ghost, id=id, pchannel=pchannel), points )
 end
 
 
 function calculators.bsse_corrected_energy(cal::Calculator{Psi4}, c1::Cluster, c2::Cluster;
-                               basename="base", id="", pchannel=undef)
+                                           basename="base", id="", pchannel=undef)
     ! gpsi4init && initpsi4(memory=cal.calculator.memory)
     s1=sprint( (io, x) -> print_xyz(io,x, printheader=false), c1)
     s2=sprint( (io, x) -> print_xyz(io,x, printheader=false), c2)
@@ -74,8 +77,8 @@ function calculators.bsse_corrected_energy(cal::Calculator{Psi4}, c1::Cluster, c
     return out
 end
 
-function calculators.bsse_corrected_energy(cal::Calculator{Psi4}, c1, c2; basename="base", id="",
-                                pchannel=undef)
+function calculators.bsse_corrected_energy(cal::Calculator{Psi4}, c1, c2;
+                                           basename="base", id="", pchannel=undef)
     return map( (x,y) -> bsse_corrected_energy(cal, x, y, basename=basename, id=id, pchannel=pchannel ), c1, c2  )
 end
 

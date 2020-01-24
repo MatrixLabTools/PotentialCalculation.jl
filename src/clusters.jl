@@ -25,7 +25,7 @@ import Base.==, Base.+
 
 
 abstract type AbstractCluster end
-abstract type AbstractClusterWithSymbols <: AbstractCluster end
+abstract type AbstractClusterWithSymbols{T} <: AbstractCluster where T<:AbstractAtom end
 
 """
     ClusterNoSymbols <: AbstractCluster
@@ -53,7 +53,7 @@ end
 
 
 """
-    Cluster{T<:AbstractAtom} <: AbstractClusterWithSymbols
+    Cluster{T} <: AbstractClusterWithSymbols{T} where T<:AbstractAtom
 
 Structure to hold location data of clusters/molecules
 
@@ -61,32 +61,32 @@ Structure to hold location data of clusters/molecules
 - `xyz::Array{Float64,2}` : location of atoms in 3d space, first index is x, y, z coordinate
 - `atoms::Vector{T}` : atom type information
 """
-mutable struct Cluster{T<:AbstractAtom} <: AbstractClusterWithSymbols
+mutable struct Cluster{T} <: AbstractClusterWithSymbols{T}
     "Location of atoms"
     xyz::Array{Float64,2}
     "Symbols for atoms"
     atoms::Vector{T}
-    function Cluster{T}(xyz::AbstractArray{<:Real,2}, atoms:: Vector{<:T}) where T<:AbstractAtom
+    function Cluster(xyz::AbstractArray{<:Real,2}, atoms::AbstractVector{T}) where T<:AbstractAtom
         if size(xyz,2) != length(atoms)
             throw(DimensionMismatch("Cluster has different sizes for atoms $(size(atoms)) and xyz $(size(xyz))"))
         elseif size(xyz,1) != 3
             throw(DimensionMismatch("Cluster - xyz has wrong dimensions"))
         end
-        new(xyz,atoms)
+        new{T}(xyz,atoms)
     end
-    function Cluster{T}(xyz::AbstractArray{<:Real,1}, atoms:: Vector{<:T}) where T<:AbstractAtom
+    function Cluster(xyz::AbstractArray{<:Real,1}, atoms::AbstractVector{T}) where T<:AbstractAtom
         if length(atoms) != 1
             throw(DimensionMismatch("Cluster has different number for atoms $(length(atoms)) and xyz 1"))
         elseif length(xyz) != 3
             throw(DimensionMismatch("Cluster - xyz has wrong dimensions"))
         end
-        new(reshape(xyz,3,1),atoms)
+        new{T}(reshape(xyz,3,1),atoms)
     end
-    function Cluster{T}(xyz::AbstractArray{<:Real,1}, atom::T) where T<:AbstractAtom
+    function Cluster(xyz::AbstractVector{<:Real}, atom::T) where T<:AbstractAtom
         if length(xyz) != 3
             throw(DimensionMismatch("Cluster - xyz has wrong dimensions size=$(size(xyz))"))
         end
-        new(reshape(xyz,3,1), [atom])
+        new{T}(reshape(xyz,3,1), [atom])
     end
 end
 
@@ -101,8 +101,8 @@ Base.length(a::AbstractCluster) = size(a)
 Base.lastindex(a::AbstractCluster) = length(a)
 
 
-function (+)(c1::T, c2::T) where T <: AbstractClusterWithSymbols
-    return T(hcat(c1.xyz,c2.xyz),vcat(c1.atoms,c2.atoms))
+function (+)(c1::Cluster{T}, c2::Cluster{T}) where T
+    return Cluster(hcat(c1.xyz,c2.xyz),vcat(c1.atoms,c2.atoms))
 end
 
 function (+)(c1::ClusterNoSymbols, c2::ClusterNoSymbols)
@@ -110,8 +110,8 @@ function (+)(c1::ClusterNoSymbols, c2::ClusterNoSymbols)
 end
 
 
-function Base.getindex(C::T, i::Int) where T <: AbstractClusterWithSymbols
-    return T(C.xyz[:,i], [C.atoms[i]])
+function Base.getindex(C::Cluster, i::Int)
+    return Cluster(C.xyz[:,i], [C.atoms[i]])
 end
 
 function Base.getindex(C::ClusterNoSymbols, i::Int)
@@ -119,8 +119,8 @@ function Base.getindex(C::ClusterNoSymbols, i::Int)
 end
 
 
-function Base.getindex(C::T, i::AbstractUnitRange) where T <: AbstractClusterWithSymbols
-    return T(C.xyz[:,i], C.atoms[i])
+function Base.getindex(C::Cluster, i::AbstractUnitRange)
+    return Cluster(C.xyz[:,i], C.atoms[i])
 end
 
 function Base.getindex(C::ClusterNoSymbols, i::AbstractUnitRange)

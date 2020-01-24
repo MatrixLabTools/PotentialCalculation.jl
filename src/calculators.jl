@@ -87,6 +87,7 @@ multiple times to make counter poise correction.
 getBSSEsteps(cal::AbstractCalculationProgram) = 1
 getBSSEsteps(cal::Orca) = 3
 
+abstract type AbtractCalculator{T<:AbstractCalculationProgram} end
 
 """
     mutable struct Calculator
@@ -107,15 +108,12 @@ julia> Calculator{Orca}("method", "basis", Orca())
 Calculator{Orca}("method", "basis", Orca("orca", 0x0000000000000001, 0x00000000000003e8, "/tmp/tmpVg959k"))
 ```
 """
-mutable struct Calculator{T<:AbstractCalculationProgram}
+mutable struct Calculator{T} <: AbtractCalculator{T}
     method
     basis
     calculator::T
-    function Calculator{T}(method::AbstractString, basis::AbstractString) where T <: AbstractCalculationProgram
-        new(method, basis, T())
-    end
-    function Calculator{T}(method::AbstractString, basis::AbstractString, calculator::T) where T <: AbstractCalculationProgram
-        new(method, basis, calculator)
+    function Calculator(method::AbstractString, basis::AbstractString, calculator::T) where T<:AbstractCalculationProgram
+        new{T}(method, basis, calculator)
     end
 end
 

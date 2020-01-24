@@ -9,7 +9,9 @@ module restarttools
 export calculate_adaptive_sample_inputs,
        calculate_energy_for_xyzfile,
        calculate_with_different_method,
+       calculate_potential,
        continue_calculation,
+       create_inputs,
        load_clusters_and_make_input,
        load_clusters_and_sample_input,
        load_data_file,
@@ -35,7 +37,14 @@ Saves final information for energy calculation.
 - `cluster1` : cluster1
 - `cluster2` : cluster2
 """
-function write_save_file(fname, calculator::Calculator, points, energy, cluster1, cluster2)
+function write_save_file(
+    fname::AbstractString,
+    calculator::Calculator,
+    points,
+    energy,
+    cluster1,
+    cluster2
+)
     data = Dict("Energy" => energy, "Points" => points, "cluster1" => cluster1, "cluster2" => cluster2,
                 "Basis" => calculator.basis, "Method" => calculator.method )
     flush(stdout)
@@ -56,7 +65,14 @@ Saves restart information for energy calculation.
 - `cluster1` : cluster1
 - `cluster2` : cluster2
 """
-function write_restart_file(fname, calculator::Calculator, points, restart_energy, cluster1, cluster2)
+function write_restart_file(
+    fname::AbstractString,
+    calculator::Calculator,
+    points,
+    restart_energy,
+    cluster1,
+    cluster2
+)
     @info "Writing restart file $(fname)"
     data = Dict("restart_energy" => restart_energy, "Points" => points, "cluster1" => cluster1, "cluster2" => cluster2,
                 "Basis" => calculator.basis, "Method" => calculator.method )
@@ -69,7 +85,7 @@ end
 
 Loads saved data
 """
-function load_data_file(fname)
+function load_data_file(fname::AbstractString)
     return load_jld_data(fname)
 end
 
@@ -79,7 +95,7 @@ end
 Loads restart information from file `fname` and adds to it key `not_calculated`,
 which holds information of which collumns of `Points` have not been calculated.
 """
-function load_restart_file(fname)
+function load_restart_file(fname::AbstractString)
     data = load_jld_data(fname)
     if haskey(data, "restart_energy")
         if ! ( typeof(data["restart_energy"]) <: Tuple)
@@ -119,8 +135,14 @@ Restarts calculation from given file
 - `save_after=nworkers()` : make restart file when given ammount of points is calculated
 - `pbar=true` : show progress bar
 """
-function continue_calculation(fname, calculator::Calculator; save_file="", restart_file="",
-                              save_after=nworkers(),  pbar=true)
+function continue_calculation(
+    fname::AbstractString,
+    calculator::Calculator;
+    save_file="",
+    restart_file="",
+    save_after=nworkers(),
+    pbar=true
+)
     data = load_restart_file(fname)
     @info "File $(fname) loaded - continuing calculation"
     calculator.basis = data["Basis"]
@@ -181,23 +203,24 @@ end
 
 
 """
-calculate_with_different_method(fname, calculator::Calculator;
-                                     save_file="", restart_file="", pbar=true,
-                                     save_after=nworkers())
-
+    calculate_potential(fname::AbstractString, calculator::Calculator;
+                        save_file="", restart_file="", pbar=true, save_after=nworkers()
+                       )
 With this function you can use already chosen points on to which to do energy calculation.
 
 # Arguments
 - `fname` : name of save/restart file where points are read
 - `calculatror::Calculator` : calculator used for calculations
+
+# Keywords
 - `save_file=""` : save final results here, if not empty
 - `restart_file=""` : save restarts here, if not empty
 - `pbar=true` : show progress bar
 - `save_after=nworkers()` : make restart file when given ammount of points is calculated
 """
-function calculate_with_different_method(fname, calculator::Calculator;
-                                         save_file="", restart_file="", pbar=true,
-                                         save_after=nworkers())
+function calculate_potential(fname::AbstractString, calculator::Calculator;
+                             save_file="", restart_file="", pbar=true, save_after=nworkers()
+                            )
     data = load_jld_data(fname)
     @info "File $(fname) loaded - calculating with different method"
     flush(stdout)
@@ -248,6 +271,14 @@ function calculate_with_different_method(fname, calculator::Calculator;
 end
 
 
+function calculate_with_different_method(fname::AbstractString, calculator::Calculator;
+                             save_file="", restart_file="", pbar=true, save_after=nworkers()
+                            )
+    @warn "calculate_with_different_method is deprecated use calculate_potential instead"
+    return calculate_potential(fname, calculator; save_file=save_file, restart_file=restart_file,
+                               pbar=pbar, save_after=save_after)
+end
+
 """
 load_clusters_and_make_input(cluster1::String, cluster2::Cluster, calculator, nsamples;
                                       max_e=0, unit="cm-1", npoints=10,
@@ -270,6 +301,7 @@ Differs from [`load_clusters_and_sample_input`](@ref) by taking every point from
 function load_clusters_and_make_input(cluster1::String, cluster2::Cluster, calculator;
                                       max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
+    @warn "load_clusters_and_make_input deprecated use create_inputs instead"
     cluster1 = read_xyz(cluster1)
 
     return  [InputAdaptiveSampler(calculator, c, cluster2,
@@ -302,6 +334,7 @@ function load_clusters_and_make_input(cluster1::Cluster, cluster2::Cluster, calc
                                       nlines=1, max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
 
+    @warn "load_clusters_and_make_input deprecated use create_inputs instead"
     return  [InputAdaptiveSampler(calculator, cluster1, cluster2,
                 1, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
                 sstep=sstep, startdistance=startdistance) for _ in 1:nlines ]
@@ -331,6 +364,7 @@ that can then be used with [`calculate_adaptive_sample_inputs`](@ref) to calcula
 function load_clusters_and_sample_input(cluster1::String, cluster2, calculator, nsamples;
                                       max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
+    @warn "load_clusters_and_sample_input deprecated use create_inputs instead"
     cluster1 = read_xyz(cluster1)
 
     return  [InputAdaptiveSampler(calculator, rand(cluster1), cluster2,
@@ -359,6 +393,7 @@ function load_clusters_and_sample_input(cluster1::String, cluster2::String, calc
 function load_clusters_and_sample_input(cluster1::String, cluster2::String, calculator, nsamples;
                                       nlines=1, max_e=0, unit="cm-1", npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
+    @warn "load_clusters_and_sample_input is deprecated use create_inputs instead"
     cluster1 = read_xyz(cluster1)
     cluster2 = read_xyz(cluster2)
 
@@ -370,20 +405,21 @@ end
 
 
 """
-    calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=nworkers(), pbar=true)
+    calculate_adaptive_sample_inputs(inputs; save_after="", save_after=nworkers(), pbar=true)
 
 Uses [`adaptive_line_sampler`](@ref) to `inputs` in distributed fashion
 
 # Arguments
-- `inputs` : calculation inputs array (eg. from [`load_clusters_and_sample_input`](@ref))
-- `save_file_name` : file where data saved
-- `save_step=nworkers()` : number of calculated items before data is saved
+- `inputs` : calculation inputs array (eg. from [`create_inputs`](@ref))
+- `save_after` : file where data saved
+- `save_after=nworkers()` : number of calculated items before data is saved
 - `pbar=true` : show progress bar
 """
-function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=nworkers(), pbar=true)
+function calculate_potential(inputs::AbstractArray{InputAdaptiveSampler};
+                             save_file="", save_after=nworkers(), pbar=true)
     @info "Starting adaptive sampling"
     flush(stdout)
-    t= collect(1:save_step:length(inputs))
+    t= collect(1:save_after:length(inputs))
     i_range = [ t[i-1]:t[i]-1  for i in 2:length(t) ]
     if t[end] < length(inputs)
         push!(i_range, t[end]:length(inputs))
@@ -409,9 +445,9 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
     points = tmp["Points"]
     mindis = tmp["Mindis"]
     pbar && ProgressMeter.next!(prog)
-    if save_file_name != ""
-        @info "Saving data to file $(save_file_name)"
-        write_save_file(save_file_name, inputs[1].cal, points, energy,
+    if save_file != ""
+        @info "Saving data to file $(save_file)"
+        write_save_file(save_file, inputs[1].cal, points, energy,
                         inputs[1].cl1, inputs[1].cl2)
     end
     if length(inputs) > 1
@@ -421,9 +457,9 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
             points = hcat(points, tmp["Points"] )
             mindis = vcat(mindis, tmp["Mindis"] )
             pbar && ProgressMeter.next!(prog)
-            if save_file_name != ""
-                @info "Saving data to file $(save_file_name)"
-                write_save_file(save_file_name, inputs[1].cal, points, energy,
+            if save_file != ""
+                @info "Saving data to file $(save_file)"
+                write_save_file(save_file, inputs[1].cal, points, energy,
                                 inputs[1].cl1, inputs[1].cl2)
             end
         end
@@ -434,6 +470,206 @@ function calculate_adaptive_sample_inputs(inputs; save_file_name="", save_step=n
                 "Method"=>inputs[1].cal.method, "Basis"=>inputs[1].cal.basis)
 end
 
+
+function calculate_adaptive_sample_inputs(inputs::AbstractArray{InputAdaptiveSampler};
+                                         save_file_name="", save_step=nworkers(), pbar=true)
+    @warn "calculate_adaptive_sample_inputs is deprecated use calculate_potential instead"
+    return calculate_potential(inputs, save_file=save_file_name, save_after=save_step, pbar=pbar)
+ end
+
+
+"""
+    create_inputs(cluster1, cluster2, calculator::Calculator;  kwargs...)
+
+
+
+Creates inputs for the calculations. Use [`calculate_adaptive_sample_inputs`](@ref) on
+results to do the calculation itself.
+
+Inputs for the molecules (named cluster1/2) can be loaded from xyz-file or given by as
+[`Cluster`](@ref) structures. If given as file names, then `nsamples` points are randomly
+picked from the trajectories for calculation. Total number of lines sampled is thus
+`nlines` times `nsamples`.
+
+Parallelisation is done over `nsamples`, thus it is recommended for it to be multiple of
+number workers processes.
+
+# Arguments
+- `cluster1` : something that can be interpreted as [`Cluster`](@ref) or an Array of it
+- `cluster2` : something that can be interpreted as [`Cluster`](@ref) or an Array of it
+- `calculator::Calculator` : [`Calculator`](@ref) used in sampling
+
+# Keywords
+- max_e=15000 : energy treshold in sampling. Enegy is lower than this value.
+- maxdis=9.0 : maximun distance in calculation
+- nline=1  : number of lines sampled for given structure pair
+- npoints=10 : number of points in each sampled line
+- nsamples=2 : number of points picked randomly from trajectories for line sampling
+- sstep=0.1 : step size used in sampling
+- startdistance= 3.5 : starting distance in sampling
+- unit="cm-1" : unit for `max_e`
+
+"""
+function create_inputs(cluster1::AbstractString,
+                cluster2::AbstractString,
+                calculator::Calculator;
+                nlines=1,
+                nsamples=2,
+                max_e=15000,
+                unit="cm-1",
+                npoints=10,
+                maxdis=9.0,
+                sstep=0.1,
+                startdistance=3.0
+               )
+
+    c1 = read_xyz(cluster1)
+    c2 = read_xyz(cluster2)
+
+    return  create_inputs(c1, c2, calculator;
+                nlines=nlines,
+                nsamples=nsamples,
+                max_e=max_e,
+                unit=unit,
+                npoints=npoints,
+                maxdis=maxdis,
+                sstep=sstep,
+                startdistance=startdistance
+            )
+end
+
+
+function create_inputs(cluster1::AbstractString,
+                cluster2,
+                calculator::Calculator;
+                nlines=1,
+                nsamples=2,
+                max_e=15000,
+                unit="cm-1",
+                npoints=10,
+                maxdis=9.0,
+                sstep=0.1,
+                startdistance=3.0
+               )
+
+    c1 = read_xyz(cluster1)
+
+    return  create_inputs(c1, cluster2, calculator;
+                nlines=nlines,
+                nsamples=nsamples,
+                max_e=max_e,
+                unit=unit,
+                npoints=npoints,
+                maxdis=maxdis,
+                sstep=sstep,
+                startdistance=startdistance
+            )
+end
+
+
+function create_inputs(cluster1,
+                cluster2::AbstractString,
+                calculator::Calculator;
+                nlines=1,
+                nsamples=2,
+                max_e=15000,
+                unit="cm-1",
+                npoints=10,
+                maxdis=9.0,
+                sstep=0.1,
+                startdistance=3.0
+               )
+
+    c2 = read_xyz(cluster2)
+
+    return  create_inputs(cluster1, c2, calculator;
+                nlines=nlines,
+                nsamples=nsamples,
+                max_e=max_e,
+                unit=unit,
+                npoints=npoints,
+                maxdis=maxdis,
+                sstep=sstep,
+                startdistance=startdistance
+            )
+end
+
+function create_inputs(cluster1::AbstractCluster,
+                cluster2::AbstractCluster,
+                calculator::Calculator;
+                nlines=1,
+                nsamples=2,
+                max_e=15000,
+                unit="cm-1",
+                npoints=10,
+                maxdis=9.0,
+                sstep=0.1,
+                startdistance=3.0
+               )
+
+
+    return  [InputAdaptiveSampler(calculator, cluster1, cluster2, nlines, max_e;
+                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+end
+
+function create_inputs(cluster1::AbstractCluster,
+                cluster2::AbstractArray{<:AbstractCluster},
+                calculator::Calculator;
+                nlines=1,
+                nsamples=2,
+                max_e=15000,
+                unit="cm-1",
+                npoints=10,
+                maxdis=9.0,
+                sstep=0.1,
+                startdistance=3.0
+               )
+
+
+    return  [InputAdaptiveSampler(calculator, cluster1, rand(cluster2), nlines, max_e;
+                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+end
+
+
+function create_inputs(cluster1::AbstractArray{<:AbstractCluster},
+                cluster2::AbstractCluster,
+                calculator::Calculator;
+                nlines=1,
+                nsamples=2,
+                max_e=15000,
+                unit="cm-1",
+                npoints=10,
+                maxdis=9.0,
+                sstep=0.1,
+                startdistance=3.0
+               )
+
+
+    return  [InputAdaptiveSampler(calculator, rand(cluster1), cluster2, nlines, max_e;
+                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+end
+
+function create_inputs(cluster1::AbstractArray{<:AbstractCluster},
+                cluster2::AbstractArray{<:AbstractCluster},
+                calculator::Calculator;
+                nlines=1,
+                nsamples=2,
+                max_e=15000,
+                unit="cm-1",
+                npoints=10,
+                maxdis=9.0,
+                sstep=0.1,
+                startdistance=3.0
+               )
+
+
+    return  [InputAdaptiveSampler(calculator, rand(cluster1), rand(cluster2), nlines, max_e;
+                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
+end
 
 
 """

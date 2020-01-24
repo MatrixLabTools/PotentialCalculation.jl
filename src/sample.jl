@@ -211,6 +211,11 @@ Structure used to help use of adaptive line samplers
 - `startdistance`     : distance where search is started
 """
 mutable struct InputAdaptiveSampler
+    # This is needed for parallelization.
+    # pmap needs that all data is send to othe process
+    # wich is intended to be done with this struct 
+
+    # TODO clean this - it is way too messy now
     cal
     cl1
     cl2
