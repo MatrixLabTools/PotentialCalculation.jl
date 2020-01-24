@@ -13,7 +13,6 @@ export load_jld_data,
 
 
 using JLD
-using FileIO
 
 using ..atoms
 using ..clusters
