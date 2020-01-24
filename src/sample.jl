@@ -3,49 +3,51 @@ module sample
 export line_sampler, adaptive_line_sampler, sample_multiple_adaptive_lines,
        InputAdaptiveSampler
 
-using LinearAlgebra, ProgressMeter
+using LinearAlgebra
+using ProgressMeter
+using Rotations
 using ..calculators, ..clusters, ..atoms, ..unitconversions
 
 
-"""
-    random_rotation!(c::AbstractCluster)
+# """
+#     random_rotation!(c::AbstractCluster)
+#
+# Rotates cluster to random orientation
+# """
+#function random_rotation!(c::AbstractCluster)
+#    θ = 2*pi*rand(3)
+#    rotate_x!(c, θ[1])
+#    rotate_y!(c, θ[2])
+#    rotate_z!(c, θ[3])
+# end
 
-Rotates cluster to random orientation
-"""
-function random_rotation!(c::AbstractCluster)
-    θ = 2*pi*rand(3)
-    rotate_x!(c, θ[1])
-    rotate_y!(c, θ[2])
-    rotate_z!(c, θ[3])
-end
-
-"""
-    random_rotation_matrix()
-
-Return random 3x3 rotation matrix
-"""
-function random_rotation_matrix()
-    theta = 2*π*rand(3)
-    Rx = Matrix{Float64}(I, 3,3)
-    Rx[2,2] = cos(theta[1])
-    Rx[3,3] = Rx[2,2]
-    Rx[3,2] = -sin(theta[1])
-    Rx[2,3] = -Rx[3,2]
-
-    Ry = Matrix{Float64}(I, 3,3)
-    Ry[1,1] = cos(theta[2])
-    Ry[3,3] = Ry[1,1]
-    Ry[3,1] = sin(theta[2])
-    Ry[1,3] = -Ry[3,1]
-
-    Rz = Matrix{Float64}(I, 3,3)
-    Rz[1,1] = cos(theta[3])
-    Rz[2,2] = Rz[1,1]
-    Rz[2,1] = -sin(theta[3])
-    Rz[1,2] = -Rz[2,1]
-
-    return Rx * Ry * Rz
-end
+# """
+#     random_rotation_matrix()
+#
+# Return random 3x3 rotation matrix
+# """
+# function random_rotation_matrix()
+#     theta = 2*π*rand(3)
+#     Rx = Matrix{Float64}(I, 3,3)
+#     Rx[2,2] = cos(theta[1])
+#     Rx[3,3] = Rx[2,2]
+#     Rx[3,2] = -sin(theta[1])
+#     Rx[2,3] = -Rx[3,2]
+#
+#     Ry = Matrix{Float64}(I, 3,3)
+#     Ry[1,1] = cos(theta[2])
+#     Ry[3,3] = Ry[1,1]
+#     Ry[3,1] = sin(theta[2])
+#     Ry[1,3] = -Ry[3,1]
+#
+#     Rz = Matrix{Float64}(I, 3,3)
+#     Rz[1,1] = cos(theta[3])
+#     Rz[2,2] = Rz[1,1]
+#     Rz[2,1] = -sin(theta[3])
+#     Rz[1,2] = -Rz[2,1]
+#
+#     return Rx * Ry * Rz
+# end
 
 
 """
@@ -97,7 +99,7 @@ function line_sampler(cl1::Cluster, cl2::Cluster; npoints=10, mindis=2.0, maxdis
     center_cluster!(c2)
 
     step = (maxdis - mindis) / npoints
-    u = random_rotation_matrix() * [1.0, 0.0, 0.0]
+    u = rand(RotMatrix{3}) * [1.0, 0.0, 0.0]
     move!(c2, mindis * u )
     while minimum(distances(c1,c2)) < mindis
         move!(c2, step * u)
@@ -136,7 +138,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
     center_cluster!(c1)
     center_cluster!(c2)
 
-    u = random_rotation_matrix() * [1.0, 0.0, 0.0]
+    u = rand(RotMatrix{3}) * [1.0, 0.0, 0.0]
     r = 0.5*startdistance
     move!(c2, 0.5*startdistance*u)
     while minimum(distances(c1,c2)) < startdistance
@@ -213,7 +215,7 @@ Structure used to help use of adaptive line samplers
 mutable struct InputAdaptiveSampler
     # This is needed for parallelization.
     # pmap needs that all data is send to othe process
-    # wich is intended to be done with this struct 
+    # wich is intended to be done with this struct
 
     # TODO clean this - it is way too messy now
     cal

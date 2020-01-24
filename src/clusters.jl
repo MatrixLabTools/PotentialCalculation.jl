@@ -13,12 +13,15 @@ export AbstractCluster,
        print_xyz,
        rotate_x!,
        rotate_y!,
-       rotate_z!
+       rotate_z!,
+       rotate_randomly!
+
 
 
 using ..atoms
 using Distances: Euclidean, pairwise, euclidean
 using LinearAlgebra
+using Rotations
 
 import Base.==, Base.+
 
@@ -216,12 +219,7 @@ end
 Rotates cluster around x-axis by angle `θ`
 """
 function rotate_x!(c::AbstractCluster, θ)
-    R = Matrix{Float64}(I, 3,3)
-    R[2,2] = cos(θ)
-    R[3,3] = R[2,2]
-    R[3,2] = -sin(θ)
-    R[2,3] = -R[3,2]
-    c.xyz = R * c.xyz
+    c.xyz = RotX(θ) * c.xyz
 end
 
 
@@ -231,12 +229,7 @@ end
 Rotates cluster around y-axis by angle `θ`
 """
 function rotate_y!(c::AbstractCluster, θ)
-    R = Matrix{Float64}(I, 3,3)
-    R[1,1] = cos(θ)
-    R[3,3] = R[1,1]
-    R[3,1] = sin(θ)
-    R[1,3] = -R[3,1]
-    c.xyz = R * c.xyz
+    c.xyz = RotY(θ) * c.xyz
 end
 
 
@@ -246,12 +239,17 @@ end
 Rotates cluster around z-axis by angle `θ`
 """
 function rotate_z!(c::AbstractCluster, θ)
-    R = Matrix{Float64}(I, 3,3)
-    R[1,1] = cos(θ)
-    R[2,2] = R[1,1]
-    R[2,1] = -sin(θ)
-    R[1,2] = -R[2,1]
-    c.xyz = R * c.xyz
+    c.xyz = RotZ(θ) * c.xyz
+end
+
+
+"""
+    rotate_randomly!(c::AbstractCluster)
+
+Rotate cluster by random angle and axis
+"""
+function rotate_randomly!(c::AbstractCluster)
+    c.xyz = rand(RotMatrix{3}) * c.xyz
 end
 
 
