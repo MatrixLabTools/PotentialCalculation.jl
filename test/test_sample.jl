@@ -16,7 +16,7 @@ using PotentialCalculation.sample
 
       tmp = deepcopy(formic_acid)
 
-      sample.random_rotation!(tmp)
+      clusters.rotate_randomly!(tmp)
 
       @test tmp.xyz != formic_acid.xyz
 
