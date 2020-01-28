@@ -15,6 +15,10 @@ using Distributed
 @everywhere using PotentialCalculation
 ```
 
+!!! note "Note"
+    Do not forget to use `@everywhere` macro when importing PotentialCalculation!
+
+
 Creating inputs and doing basic calculation, where two molecules are calculated
 with various distances and orientations from each other.
 
@@ -61,7 +65,7 @@ New calculations with different method can be done on previous points.
 ccf12 = Calculator(
            "CCSD(T)-F12/RI TIGHTSCF",
            "cc-pVDZ-F12 cc-pVDZ-F12-CABS cc-pVTZ/C",
-           Orca(maxmem=3500)
+           Orca(maxmem=4000)
         )
 
 data2 = calculate_potential(
@@ -83,19 +87,54 @@ data3 = continue_calculation(
         )
 ```
 
-### Calculators
+## Calculators
 
-PotentilaCalculation can use either [ORCA](https://orcaforum.kofo.mpg.de)
-or [Psi4](http://www.psicode.org/) as a backend for calculations.
+PotentilaCalculation can use either [Orca](@ref)
+or [Psi4](@ref) as a backend for calculations.
 
 To create ORCA calculator you can use
 
-```@docs
-Orca
+```julia
+Orca(
+   executable="path to orca binary",
+   maxmem=4000,
+   ncore=1,
+   tmp_dir="directory where calculations are done"
+)
 ```
+
+If you are using `ncore>1` then you need specify `executable`, in other cases
+PATH is searched for orca-binary.  
 
 For Psi4 use
 
-```@docs
-Psi4
+```julia
+using PotentialCalculation.psi4
+
+Psi4(
+   memory="1GiB",
+   nthreads=1,
+)
+```
+You need to import Psi4 explicitly with `using PotentialCalculation.psi4`. All
+Psi4 global environmental variables are present. To access them you need to use
+`PotentialCalculation.psi4.gPsi4`-handel after using
+`PotentialCalculation.psi4.initpsi()`-function to initialize Psi4 environment.
+
+## Using with SLURM/PBS etc.
+
+Julia support use of varios scheduling software like [Slurm](https://www.schedmd.com/)
+or [PBS](https://www.pbspro.org/) etc. trough
+[ClusterManagers.jl](https://github.com/JuliaParallel/ClusterManagers.jl)
+package. It is recommended that you use any these then you should use
+ClusterMangers.
+
+To PotentialCalculation with Slurm simply start with
+
+```julia
+using Distributed
+using ClusterManagers
+
+addprocs_slurm(number_of_processes) # ncore option in Slurm job file
+@everywhere using PotentialCalculation
 ```
