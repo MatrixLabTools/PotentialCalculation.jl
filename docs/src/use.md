@@ -23,7 +23,6 @@ Creating inputs and doing basic calculation, where two molecules are calculated
 with various distances and orientations from each other.
 
 ```julia
-
 # Creating calculation method
 mp2 = Calculator(
         "RI-MP2 RIJK TIGHTSCF",

@@ -1,6 +1,6 @@
 # Install
 
-Start Julia and hit "]" to enter pkg REPL then type
+Start Julia and hit "]" to enter into pkg REPL, after that type
 
 ```julia
 pkg> add registry add https://github.com/MatrixLabTools/PackageRegistry
@@ -8,7 +8,7 @@ pkg> add PotentialCalculation
 ```
 
 Currently there are two backends, [ORCA](https://orcaforum.kofo.mpg.de)
-and [Psi4](http://www.psicode.org/). To do any calculation you need to have
+and [Psi4](http://www.psicode.org/). To do any calculation, you need to have
 at least one of these installed.
 
 
@@ -20,7 +20,7 @@ pkg> test PotentialCalculation
 checking for backends is made:
 - Search PATH for `orca`-executable, for ORCA backend
 - Trying to import psi4 python module
-If either of these succeeds then k.o. backend is tested.
+If either of these succeeds then that backend is tested.
 
 !!! note "Note"
     When doing calculations with ORCA you can specify `orca`-binary location and
