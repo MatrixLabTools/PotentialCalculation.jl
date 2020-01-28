@@ -42,7 +42,7 @@ if Sys.which("orca") != nothing
 
         data1=calculate_potential(inputs, save_file=fname, pbar=pbar)
         data2=calculate_potential(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
-        data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
+        data3=continue_calculation(rname, Orca(), save_file=sname, restart_file=rname, pbar=pbar)
 
         @test all(isapprox.(data1["Energy"], data2["Energy"], atol=2E-6))
         @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))

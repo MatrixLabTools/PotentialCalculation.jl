@@ -201,6 +201,26 @@ function continue_calculation(
 end
 
 
+function continue_calculation(
+    fname::AbstractString,
+    calculator::AbstractCalculationProgram;
+    save_file="",
+    restart_file="",
+    save_after=nworkers(),
+    pbar=true
+)
+    return continue_calculation(
+        fname,
+        Calculator("","",calculator);
+        save_file=save_file,
+        restart_file=restart_file,
+        save_after=save_after,
+        pbar=pbar
+    )
+end
+
+
+
 
 """
     calculate_potential(fname::AbstractString, calculator::Calculator;
