@@ -58,9 +58,18 @@ path to orca executable.
 
 # Fields
 - `executable` : path to "orca" executable - default = `"orca"`
-- `ncore` : number of cores used by orca - default = `1`
-- `maxmem` : maximum memory per core for orca - default = `1000`
+- `ncore::Uint` : number of cores used by orca - default = `1`
+- `maxmem:.Uint` : maximum memory per core for orca in mega bytes - default = `1000`
 - `tmp_dir` : directory where calculations are done - default = `mktempdir()`
+
+# Examples
+```julia
+julia> Orca()
+Orca("orca", 0x0000000000000001, 0x00000000000003e8, "/tmp/jl_k4hnkY")
+
+julia> Orca(executable="/opt/Orca/bin/orca", maxmem=4000, tmp_dir="/tmp/calculations/")
+Orca("/opt/Orca/bin/orca", 0x0000000000000001, 0x0000000000000fa0, "/tmp/calculations/")
+```
 """
 mutable struct Orca <: AbstractCalculationProgram
     "path for orca excecutable"
@@ -101,10 +110,7 @@ Struct used to hold together different bits of information needed in calculation
 
 # Examples
 ```julia
-julia> Calculator{Orca}("method", "basis")
-Calculator{Orca}("method", "basis", Orca("orca", 0x0000000000000001, 0x00000000000003e8, "/tmp/tmpxEoJYW"))
-
-julia> Calculator{Orca}("method", "basis", Orca())
+julia> Calculator("method", "basis", Orca())
 Calculator{Orca}("method", "basis", Orca("orca", 0x0000000000000001, 0x00000000000003e8, "/tmp/tmpVg959k"))
 ```
 """

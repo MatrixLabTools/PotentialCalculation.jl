@@ -37,6 +37,10 @@ end
     mutable struct Psi4 <: AbstractCalculationProgram
 
 Holds information that calculations are to be done with Psi4
+
+# Fields
+- `memory="500MiB"` : memory used by Psi4
+- `nthreads=1`  : number of threads used by Psi4
 """
 mutable struct Psi4 <: AbstractCalculationProgram
     memory::String
@@ -51,7 +55,7 @@ end
 
 function calculators.calculate_energy(cal::Calculator{Psi4}, point::Cluster;
                                       basename="base", ghost=undef, id="", pchannel=undef)
-    ! gpsi4init && initpsi4(memory=cal.calculator.memory)
+    ! gpsi4init && initpsi4(memory=cal.calculator.memory, nthreads=cal.calculator.nthreads)
     s=sprint( (io, x) -> print_xyz(io,x, printheader=false), point)
     c = gPsi4.geometry(s)
     out = gPsi4.energy(cal.method*"/"*cal.basis, molecule=c)

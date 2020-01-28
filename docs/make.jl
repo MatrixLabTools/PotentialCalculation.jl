@@ -1,8 +1,11 @@
 using Documenter
-using PotentialCalculation
+using PotentialCalculation, PotentialCalculation.psi4
 
 makedocs(sitename="PotentialCalculation.jl",
-         pages=["Home" => "index.md"]
+         pages=["Home" => "index.md",
+                "Install" => "install.md",
+                "Usage" => "use.md",
+                "References" => "reference.md"]
 
 )
 
