@@ -1,4 +1,4 @@
-module calculators
+module Calculators
 
 export AbstractCalculator,
        AbstractCalculationProgram,
@@ -16,7 +16,7 @@ export AbstractCalculator,
 
 
 
-using ..clusters
+using ..Clusters
 using Distributed
 
 

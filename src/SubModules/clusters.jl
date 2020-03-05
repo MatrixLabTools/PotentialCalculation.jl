@@ -1,4 +1,4 @@
-module clusters
+module Clusters
 
 export AbstractCluster,
        AbstractClusterWithSymbols,
@@ -18,7 +18,7 @@ export AbstractCluster,
 
 
 
-using ..atoms
+using ..Atoms
 using Distances: Euclidean, pairwise, euclidean
 using LinearAlgebra
 using Rotations

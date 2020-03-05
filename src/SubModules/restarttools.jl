@@ -1,10 +1,10 @@
 """
-module restarttools
+module Restarttools
 
 Primary tools to do calculations.
 Also contains all methods to restart calculations.
 """
-module restarttools
+module Restarttools
 
 export calculate_adaptive_sample_inputs,
        calculate_energy_for_xyzfile,
@@ -20,8 +20,12 @@ export calculate_adaptive_sample_inputs,
        write_restart_file,
        write_save_file
 
-using ..fileaccess, ..calculators, ..sample, ..clusters
-using Distributed, ProgressMeter
+using ..Calculators
+using ..Clusters
+using ..Fileaccess
+using ..Sample
+using Distributed
+using ProgressMeter
 
 
 """

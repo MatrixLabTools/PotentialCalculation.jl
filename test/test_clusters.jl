@@ -1,11 +1,11 @@
 using Test
-using PotentialCalculation.identical
-using PotentialCalculation.atoms
-using PotentialCalculation.clusters
+using PotentialCalculation.IdenticalTools
+using PotentialCalculation.Atoms
+using PotentialCalculation.Clusters
 
 
 
-@testset "clusters" begin
+@testset "Clusters" begin
     formic_acid=Cluster(
      [-6.7041359778      1.3501192944      0.0102209137
     -5.3688853815      1.2229556023      0.0440598937

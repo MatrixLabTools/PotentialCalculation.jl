@@ -1,5 +1,5 @@
 using Test
-using PotentialCalculation.atoms
+using PotentialCalculation.Atoms
 
 @testset "atoms" begin
 

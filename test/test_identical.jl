@@ -1,7 +1,7 @@
 using Test
-using PotentialCalculation.identical
+using PotentialCalculation.IdenticalTools
 
-@testset "identical" begin
+@testset "IdenticalTools" begin
     ii = Identical()
     push!(ii, (2,3))
     @test ! areidentical(ii, (1,2))

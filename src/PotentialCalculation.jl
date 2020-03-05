@@ -3,28 +3,33 @@ module PotentialCalculation
 using Reexport
 
 
-include("identical.jl")
-@reexport using .identical
-include("atoms.jl")
-@reexport using .atoms
-include("molecules.jl")
-@reexport using .molecules
-include("clusters.jl")
-@reexport using .clusters
+include("SubModules/identical.jl")
+@reexport using .IdenticalTools
 
-include("unitconversions.jl")
-@reexport using .unitconversions
-include("fileaccess.jl")
-@reexport using .fileaccess
+include("SubModules/atoms.jl")
+@reexport using .Atoms
 
-include("calculators.jl")
-@reexport using .calculators
-include("psi4.jl")
-include("sample.jl")
-@reexport using .sample
+include("SubModules/molecules.jl")
+@reexport using .Molecules
 
-include("restarttools.jl")
-@reexport using .restarttools
+include("SubModules/clusters.jl")
+@reexport using .Clusters
 
+include("SubModules/unitconversions.jl")
+@reexport using .UnitConversions
+
+include("SubModules/fileaccess.jl")
+@reexport using .Fileaccess
+
+include("SubModules/calculators.jl")
+@reexport using .Calculators
+
+include("SubModules/sample.jl")
+@reexport using .Sample
+
+include("SubModules/restarttools.jl")
+@reexport using .Restarttools
+
+include("SubModules/psi4.jl")
 
 end # module

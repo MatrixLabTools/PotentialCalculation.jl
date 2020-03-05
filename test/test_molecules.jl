@@ -1,11 +1,11 @@
 using Test
-using PotentialCalculation.identical
-using PotentialCalculation.atoms
-using PotentialCalculation.molecules
+using PotentialCalculation.IdenticalTools
+using PotentialCalculation.Atoms
+using PotentialCalculation.Molecules
 
 
 
-@testset "molecules" begin
+@testset "Molecules" begin
     m = Molecule{AtomOnlySymbol}(["A", "B", "Ca"])
     mm = Molecule{AtomOnlySymbol}(AtomOnlySymbol.(["A", "B", "Ca"]))
     mi = MoleculeIdenticalInformation{AtomOnlySymbol}(["A", "B", "Ca"])
