@@ -1,8 +1,8 @@
 module psi4
 
 using PyCall
-using ..calculators
-using ..clusters
+using ..Calculators
+using ..Clusters
 
 export Psi4
 
@@ -53,7 +53,7 @@ mutable struct Psi4 <: AbstractCalculationProgram
 end
 
 
-function calculators.calculate_energy(cal::Calculator{Psi4}, point::Cluster;
+function Calculators.calculate_energy(cal::Calculator{Psi4}, point::Cluster;
                                       basename="base", ghost=undef, id="", pchannel=undef)
     ! gpsi4init && initpsi4(memory=cal.calculator.memory, nthreads=cal.calculator.nthreads)
     s=sprint( (io, x) -> print_xyz(io,x, printheader=false), point)
@@ -64,13 +64,13 @@ function calculators.calculate_energy(cal::Calculator{Psi4}, point::Cluster;
 end
 
 
-function calculators.calculate_energy(cal::Calculator{Psi4}, points;
+function Calculators.calculate_energy(cal::Calculator{Psi4}, points;
                                       basename="base", ghost=undef, id="", pchannel=undef)
     return map( x -> calculate_energy(cal, x, basename=basename, ghost=ghost, id=id, pchannel=pchannel), points )
 end
 
 
-function calculators.bsse_corrected_energy(cal::Calculator{Psi4}, c1::Cluster, c2::Cluster;
+function Calculators.bsse_corrected_energy(cal::Calculator{Psi4}, c1::Cluster, c2::Cluster;
                                            basename="base", id="", pchannel=undef)
     ! gpsi4init && initpsi4(memory=cal.calculator.memory)
     s1=sprint( (io, x) -> print_xyz(io,x, printheader=false), c1)
@@ -81,7 +81,7 @@ function calculators.bsse_corrected_energy(cal::Calculator{Psi4}, c1::Cluster, c
     return out
 end
 
-function calculators.bsse_corrected_energy(cal::Calculator{Psi4}, c1, c2;
+function Calculators.bsse_corrected_energy(cal::Calculator{Psi4}, c1, c2;
                                            basename="base", id="", pchannel=undef)
     return map( (x,y) -> bsse_corrected_energy(cal, x, y, basename=basename, id=id, pchannel=pchannel ), c1, c2  )
 end

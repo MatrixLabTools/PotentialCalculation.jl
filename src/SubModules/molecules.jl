@@ -1,11 +1,11 @@
 """
-    module molecules
+    module Molecules
 
 Holds information of molecules.
 
 Main reason form this module is to implement identical atom information when fitting potential
 """
-module molecules
+module Molecules
 
 export AbstractMolecule,
        Molecule,
@@ -13,7 +13,8 @@ export AbstractMolecule,
        makeidentical!
 
 
-using ..identical, ..atoms
+using ..IdenticalTools
+using ..Atoms
 
 
 abstract type AbstractMolecule end
@@ -103,7 +104,7 @@ end
 
 Checks if atoms with indices given in collection `x` are identical
 """
-identical.areidentical(mol::MoleculeIdenticalInformation,x) = identical.areidentical(mol.identical,x)
+IdenticalTools.areidentical(mol::MoleculeIdenticalInformation,x) = IdenticalTools.areidentical(mol.identical,x)
 
 Base.convert(t::Type{<:AbstractMolecule}, m::AbstractMolecule) = t(m.atoms)
 

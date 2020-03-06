@@ -1,4 +1,4 @@
-module unitconversions
+module UnitConversions
 
 export change_energy_unit,
        energy_from,

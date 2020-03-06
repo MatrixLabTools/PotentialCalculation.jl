@@ -1,4 +1,4 @@
-module clusters
+module Clusters
 
 export AbstractCluster,
        AbstractClusterWithSymbols,
@@ -18,7 +18,7 @@ export AbstractCluster,
 
 
 
-using ..atoms
+using ..Atoms
 using Distances: Euclidean, pairwise, euclidean
 using LinearAlgebra
 using Rotations
@@ -319,4 +319,11 @@ function dihedral_angle(c::AbstractCluster, i, j, k, m)
     return atan( dot(t1, r2./norm(r2)), t2 )
 end
 
-end #module
+end #module Clusters
+
+
+# This is for compability for older versions
+module clusters
+    using ..Clusters
+    cluster = Clusters.Cluster
+end #module clusters

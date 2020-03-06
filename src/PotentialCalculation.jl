@@ -1,99 +1,35 @@
 module PotentialCalculation
 
-export m_electron,
-       m_u,
-       m_au,
-       proton_mass,
-       masses,
-       AbstractAtom,
-       AbstractAtomWithMass,
-       AtomOnlySymbol,
-       AtomWithMass,
-       AbstractMolecule,
-       Molecule,
-       MoleculeIdenticalInformation,
-       makeidentical!,
-
-       AbstractCluster,
-       AbstractClusterWithSymbols,
-       Cluster,
-       cluster_angle,
-       ClusterNoSymbols,
-       ClusterWithMass,
-       dihedral_angle,
-       distances,
-       print_xyz,
-
-       AbstractIdentical,
-       Identical,
-       areidentical,
-
-       load_jld_data,
-       read_xyz,
-       save_jld_data,
-
-       AbstractCalculator,
-       AbstractCalculationProgram,
-       Orca,
-       Calculator,
-       calculate_energy,
-       bsse_corrected_energy,
-
-       change_energy_unit,
-       energy_from,
-       energy_to,
-
-       line_sampler,
-       adaptive_line_sampler,
-       sample_multiple_adaptive_lines,
-       InputAdaptiveSampler,
+using Reexport
 
 
-       calculate_adaptive_sample_inputs,
-       calculate_energy_for_xyzfile,
-       calculate_potential,
-       calculate_with_different_method,
-       continue_calculation,
-       create_inputs,
-       load_clusters_and_make_input,
-       load_clusters_and_sample_input,
-       load_data_file,
-       load_restart_file,
-       test_work,
-       write_restart_file,
-       write_save_file
+include("SubModules/identical.jl")
+@reexport using .IdenticalTools
 
+include("SubModules/atoms.jl")
+@reexport using .Atoms
 
-include("identical.jl")
-include("atoms.jl")
-include("molecules.jl")
-include("clusters.jl")
+include("SubModules/molecules.jl")
+@reexport using .Molecules
 
+include("SubModules/clusters.jl")
+@reexport using .Clusters
 
-include("unitconversions.jl")
-include("fileaccess.jl")
+include("SubModules/unitconversions.jl")
+@reexport using .UnitConversions
 
-include("calculators.jl")
-include("psi4.jl")
-include("sample.jl")
+include("SubModules/fileaccess.jl")
+@reexport using .Fileaccess
 
-include("restarttools.jl")
+include("SubModules/calculators.jl")
+@reexport using .Calculators
 
+include("SubModules/sample.jl")
+@reexport using .Sample
 
+include("SubModules/restarttools.jl")
+@reexport using .Restarttools
 
-
-using .atoms
-using .molecules
-using .clusters
-using .identical
-using .unitconversions
-using .fileaccess
-using .calculators
-using .sample
-using .restarttools
-
-
-
-
+include("SubModules/psi4.jl")
 
 end # module

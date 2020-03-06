@@ -1,13 +1,15 @@
-module atoms
+module Atoms
 
 
 export m_electron, m_u, m_au, proton_mass, masses
 
-export AbstractAtom, AbstractAtomWithMass,
-       AtomOnlySymbol, AtomWithMass
+export AbstractAtom,
+       AbstractAtomWithMass,
+       AtomOnlySymbol,
+       AtomWithMass
 
 
-using ..identical
+using ..IdenticalTools
 
 
 const m_electron = 9.10938291E-31
@@ -61,3 +63,10 @@ Base.convert(t::Type{<:AbstractAtom}, x::AbstractString) = t(x)
 Base.convert(t::Type{<:AbstractAtom}, x::AbstractAtom) = t(x.id)
 
 end #module
+
+
+# This is for compability for older versions
+module atoms
+    using ..Atoms
+    AtomOnlySymbol = Atoms.AtomOnlySymbol
+end  # module atoms

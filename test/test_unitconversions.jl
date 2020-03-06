@@ -1,7 +1,7 @@
 using Test
-using PotentialCalculation.unitconversions
+using PotentialCalculation.UnitConversions
 
-@testset "unitconversions" begin
+@testset "UnitConversions" begin
     e1 = 32.42
     e2 = 2.75E-4
 

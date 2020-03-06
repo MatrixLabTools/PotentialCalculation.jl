@@ -1,4 +1,4 @@
-module sample
+module Sample
 
 export line_sampler, adaptive_line_sampler, sample_multiple_adaptive_lines,
        InputAdaptiveSampler
@@ -6,7 +6,10 @@ export line_sampler, adaptive_line_sampler, sample_multiple_adaptive_lines,
 using LinearAlgebra
 using ProgressMeter
 using Rotations
-using ..calculators, ..clusters, ..atoms, ..unitconversions
+using ..Atoms
+using ..Calculators
+using ..Clusters
+using ..UnitConversions
 
 
 

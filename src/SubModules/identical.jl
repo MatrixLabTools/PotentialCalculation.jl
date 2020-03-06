@@ -1,7 +1,7 @@
 """
 Methods to help handling of identical atoms in molecules
 """
-module identical
+module IdenticalTools
 
 
 export AbstractIdentical,

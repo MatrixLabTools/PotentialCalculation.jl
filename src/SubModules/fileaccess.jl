@@ -1,9 +1,9 @@
 """
-module fileaccess
+module Fileaccess
 
 This module contains low level fileaccess methods
 """
-module fileaccess
+module Fileaccess
 
 
 
@@ -14,9 +14,9 @@ export load_jld_data,
 
 using JLD
 
-using ..atoms
-using ..clusters
-using ..molecules
+using ..Atoms
+using ..Clusters
+using ..Molecules
 
 
 

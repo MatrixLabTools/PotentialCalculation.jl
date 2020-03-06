@@ -1,11 +1,11 @@
 using Test
-using PotentialCalculation.atoms
-using PotentialCalculation.clusters
-using PotentialCalculation.sample
+using PotentialCalculation.Atoms
+using PotentialCalculation.Clusters
+using PotentialCalculation.Sample
 
 
 
-@testset "sample" begin
+@testset "Sample" begin
     formic_acid=Cluster(
      [-6.7041359778      1.3501192944      0.0102209137
     -5.3688853815      1.2229556023      0.0440598937
@@ -16,7 +16,7 @@ using PotentialCalculation.sample
 
       tmp = deepcopy(formic_acid)
 
-      clusters.rotate_randomly!(tmp)
+      Clusters.rotate_randomly!(tmp)
 
       @test tmp.xyz != formic_acid.xyz
 
