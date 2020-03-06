@@ -63,3 +63,10 @@ Base.convert(t::Type{<:AbstractAtom}, x::AbstractString) = t(x)
 Base.convert(t::Type{<:AbstractAtom}, x::AbstractAtom) = t(x.id)
 
 end #module
+
+
+# This is for compability for older versions
+module atoms
+    using ..Atoms
+    AtomOnlySymbol = Atoms.AtomOnlySymbol
+end  # module atoms
