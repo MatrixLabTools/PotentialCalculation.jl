@@ -15,5 +15,6 @@ Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 
 [compat]
 JLD = ">= 0.9.2"
+ProgressMeter = "1.2"
 PyCall = "1.90"
 Rotations = "0.13"
