@@ -103,7 +103,7 @@ Orca(
 ```
 
 If you are using `ncore>1` then you need specify `executable`, in other cases
-PATH is searched for orca-binary.  
+PATH is searched for orca-binary. `tmp_dir` is by default created in `$TMP`.
 
 For Psi4 use
 
@@ -137,27 +137,27 @@ Calculator(
 
 ## General Structure of Calculations
 
-### 1-Sampling
+### 1. Sampling
 
 Fist phase of calculations is sampling of calculations points. It is recommended
-that is is done with some cheap method, like RI-MP2 or DFT, then check that the
-sampling is acceptable, use visualization tools from
-[PotentialFitting](https://github.com/MatrixLabTools/PotentialFitting.jl) to
-do this.
+that is is done with some cheap method, like RI-MP2 or DFT. The sampling should
+then verrified to be acceptable, which cane be done with visualization tools from
+[PotentialFitting](https://github.com/MatrixLabTools/PotentialFitting.jl).
 
 General points are:
-- `npoints` needs to be more than 50 for potential to catch rapid changes around
+- `npoints` needs to be at least 50 for potential to catch rapid changes around
   minimum.
 - `max_e` defines usability of the potential, if you just need simple spectrum
   5000 cm⁻¹ is probably enough, but for other cases you might need more.
-  So it is recommended to use at least the default 15000 cm⁻¹ value.
+  Default value is 15000 cm⁻¹, which is good for everything else exept high
+  excitation simulations.
 - Generate first trajectory with some variability in molecule geometry.
   PotentialCalculation can then sample points out of it, so that the calculated
   potential energy surface has greater applicability.
 - Default search parameters have been tested with several molecules and are
   probably fine.
 
-### 2-Calculation
+### 2. Calculation
 
 In second phase of calculation final potential is generated. To do this, it is
 recommended to use good method. For small molecules CCSD(T)-F12, with
@@ -176,23 +176,23 @@ For larger molecules ORCA has DLPNO-CCSD(T)-F12, but in the limited testing that
 method had some jumps in the potential and was thus deemed to not be a good one.
 But it might be ok, with some tuning of DLPNO-parameters.
 
-### 3-Fitting
+### 3. Fitting
 
 Third phase is fitting of potential and that is done with
 [PotentialFitting](https://github.com/MatrixLabTools/PotentialFitting.jl).
 
-### 4-Storing/Sharing potential
+### 4. Storing/Sharing potential
 
 To store or share potential you can use [PotentialDB](https://github.com/MatrixLabTools/PotentialDB.jl).
 
 
 ## Using with SLURM/PBS etc.
 
-Julia support use of varios scheduling software like [Slurm](https://www.schedmd.com/)
+Julia supports use of various scheduling software like [Slurm](https://www.schedmd.com/)
 or [PBS](https://www.pbspro.org/) etc. trough
 [ClusterManagers.jl](https://github.com/JuliaParallel/ClusterManagers.jl)
-package. It is recommended that you use any these then you should use
-ClusterMangers.
+package. It is recommended that when you use any these, you should use
+ClusterMangers to add processes.
 
 To PotentialCalculation with Slurm simply start with
 
