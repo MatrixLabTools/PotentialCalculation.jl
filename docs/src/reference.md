@@ -2,6 +2,10 @@
 
 
 ```@autodocs
-Modules = [PotentialCalculation]
-Order   = [:function, :type]
+Modules = [PotentialCalculation.Calculators,
+           PotentialCalculation.Restarttools,
+           PotentialCalculation.Clusters,
+           PotentialCalculation.Molecules,
+           PotentialCalculation.Atoms
+]
 ```
