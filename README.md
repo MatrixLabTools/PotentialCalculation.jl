@@ -106,8 +106,8 @@ data3 = continue_calculation(
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://MatrixLabTools.github.io/PotentialCalculation.jl/stable
 
-[travis-img]: https://travis-ci.org/MatrixLabTools/PotentialCalculation.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/MatrixLabTools/PotentialCalculation.jl
+[travis-img]: https://github.com/MatrixLabTools/PotentialCalculation.jl/workflows/CI/badge.svg
+[travis-url]: https://github.com/MatrixLabTools/PotentialCalculation.jl/actions?query=workflow%3ACI
 
 [codecov-img]: https://codecov.io/gh/MatrixLabTools/PotentialCalculation.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/MatrixLabTools/PotentialCalculation.jl
