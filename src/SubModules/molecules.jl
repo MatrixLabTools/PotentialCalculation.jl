@@ -60,11 +60,9 @@ end
 
 
 """
-    Base.push!(Mol::MoleculeIdenticalInformation,x)
+    makeidentical!(Mol::MoleculeIdenticalInformation,x)
 
 Adds information for identical atoms to molecule.
-
-DEPRECATED!!! - use makeidentical! instead
 
 # Arguments
 - `Mol::MoleculeIdenticalInformation` : moleculet to which identical information is added
@@ -73,24 +71,6 @@ DEPRECATED!!! - use makeidentical! instead
 ## Throws
 Error if `x` is out of bounds of `Mol`
 """
-function Base.push!(Mol::MoleculeIdenticalInformation,x)
-    @warn "push! is Deprecated - use makeidentical!"
-    makeidentical!(Mol,x)
- end
-
-
- """
-     makeidentical!(Mol::MoleculeIdenticalInformation,x)
-
- Adds information for identical atoms to molecule.
-
- # Arguments
- - `Mol::MoleculeIdenticalInformation` : moleculet to which identical information is added
- - `x` : collection of indices of identical atoms
-
- ## Throws
- Error if `x` is out of bounds of `Mol`
- """
 function makeidentical!(Mol::MoleculeIdenticalInformation,x)
     if maximum(x) <= length(Mol.atoms) && minimum(x) >= 1
         push!(Mol.identical,x)
@@ -98,6 +78,7 @@ function makeidentical!(Mol::MoleculeIdenticalInformation,x)
         error("Molecule has only $(length(Mol.atoms)) atoms")
     end
 end
+
 
 """
     areidentical(mol::MoleculeIdenticalInformation,x)
