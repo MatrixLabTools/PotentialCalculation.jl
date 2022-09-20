@@ -6,19 +6,19 @@ Also contains all methods to restart calculations.
 """
 module Restarttools
 
-export calculate_adaptive_sample_inputs,
-       calculate_energy_for_xyzfile,
-       calculate_with_different_method,
-       calculate_potential,
-       continue_calculation,
-       create_inputs,
-       load_clusters_and_make_input,
-       load_clusters_and_sample_input,
-       load_data_file,
-       load_restart_file,
-       test_work,
-       write_restart_file,
-       write_save_file
+export calculate_adaptive_sample_inputs
+export calculate_energy_for_xyzfile
+export calculate_with_different_method
+export calculate_potential
+export continue_calculation
+export create_inputs
+export load_clusters_and_make_input
+export load_clusters_and_sample_input
+export load_data_file
+export load_restart_file
+export test_work
+export write_restart_file
+export write_save_file
 
 using ..Calculators
 using ..Clusters
@@ -26,6 +26,7 @@ using ..Fileaccess
 using ..Sample
 using Distributed
 using ProgressMeter
+using Unitful
 
 
 """
@@ -323,13 +324,13 @@ Differs from [`load_clusters_and_sample_input`](@ref) by taking every point from
 - `startdistance` : Distance from which adaptive seach is started
 """
 function load_clusters_and_make_input(cluster1::String, cluster2::Cluster, calculator;
-                                      max_e=0, unit="cm-1", npoints=10,
-                                      maxdis=9.0, sstep=0.1, startdistance=2.5)
+                                      max_e=0u"cm^-1", npoints=10,
+                                      maxdis=9.0u"Å", sstep=0.1u"Å", startdistance=2.5u"Å")
     @warn "load_clusters_and_make_input deprecated use create_inputs instead"
     cluster1 = read_xyz(cluster1)
 
     return  [InputAdaptiveSampler(calculator, c, cluster2,
-                1, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
+                1, max_e, npoints=npoints, maxdis=maxdis,
                 sstep=sstep, startdistance=startdistance) for c in cluster1 ]
 end
 
@@ -348,19 +349,18 @@ Differs from [`load_clusters_and_sample_input`](@ref) by taking every point from
 - `cluster2::Cluster` : cluster2
 - `nlines` : number of lines to be sampled in calculation
 - `max_e` : Point that is closest and has less energy than this will be starting point for a line
-- `unit` : Unit in which `max_e` is given
 - `npoints` : Number of points in potential
 - `maxdis` : Maximum distance in potential calculation
 - `sstep` : Search step size for adaptive search
 - `startdistance` : Distance from which adaptive seach is started
 """
 function load_clusters_and_make_input(cluster1::Cluster, cluster2::Cluster, calculator;
-                                      nlines=1, max_e=0, unit="cm-1", npoints=10,
-                                      maxdis=9.0, sstep=0.1, startdistance=2.5)
+                                      nlines=1, max_e=0u"cm^-1", npoints=10,
+                                      maxdis=9.0u"Å", sstep=0.1u"Å", startdistance=2.5u"Å")
 
     @warn "load_clusters_and_make_input deprecated use create_inputs instead"
     return  [InputAdaptiveSampler(calculator, cluster1, cluster2,
-                1, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
+                1, max_e, npoints=npoints, maxdis=maxdis,
                 sstep=sstep, startdistance=startdistance) for _ in 1:nlines ]
 end
 
@@ -368,7 +368,7 @@ end
 
 """
 load_clusters_and_sample_input(fname_cluster1, cluster2, calculator, nsamples;
-                                      max_e=0, unit="cm-1", npoints=10,
+                                      max_e=0, npoints=10,
                                       maxdis=9.0, sstep=0.1, startdistance=2.5)
 
 Loads cluster1 from xyz-file and takes `nsamples` samples of it and returns them as an Array
@@ -379,20 +379,19 @@ that can then be used with [`calculate_adaptive_sample_inputs`](@ref) to calcula
 - `cluster2` : cluster2
 - `nsamples` : number of samples taken from `fname_cluster1`
 - `max_e` : Point that is closest and has less energy than this will be starting point for a line
-- `unit` : Unit in which `max_e` is given
 - `npoints` : Number of points in potential
 - `maxdis` : Maximum distance in potential calculation
 - `sstep` : Search step size for adaptive search
 - `startdistance` : Distance from which adaptive seach is started
 """
 function load_clusters_and_sample_input(cluster1::String, cluster2, calculator, nsamples;
-                                      max_e=0, unit="cm-1", npoints=10,
-                                      maxdis=9.0, sstep=0.1, startdistance=2.5)
+                                      max_e=0u"cm^-1", npoints=10,
+                                      maxdis=9.0u"Å", sstep=0.1u"Å", startdistance=2.5u"Å")
     @warn "load_clusters_and_sample_input deprecated use create_inputs instead"
     cluster1 = read_xyz(cluster1)
 
     return  [InputAdaptiveSampler(calculator, rand(cluster1), cluster2,
-                1, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
+                1, max_e, npoints=npoints, maxdis=maxdis,
                 sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
 
@@ -415,14 +414,14 @@ function load_clusters_and_sample_input(cluster1::String, cluster2::String, calc
 - `startdistance` : Distance from which adaptive seach is started
 """
 function load_clusters_and_sample_input(cluster1::String, cluster2::String, calculator, nsamples;
-                                      nlines=1, max_e=0, unit="cm-1", npoints=10,
-                                      maxdis=9.0, sstep=0.1, startdistance=2.5)
+                                      nlines=1, max_e=0u"cm^-1", npoints=10,
+                                      maxdis=9.0u"Å", sstep=0.1u"Å", startdistance=2.5u"Å")
     @warn "load_clusters_and_sample_input is deprecated use create_inputs instead"
     cluster1 = read_xyz(cluster1)
     cluster2 = read_xyz(cluster2)
 
     return  [InputAdaptiveSampler(calculator, rand(cluster1), rand(cluster2),
-                nlines, max_e, unit=unit, npoints=npoints, maxdis=maxdis,
+                nlines, max_e, npoints=npoints, maxdis=maxdis,
                 sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
 
@@ -444,7 +443,7 @@ function calculate_potential(inputs::AbstractArray{InputAdaptiveSampler};
     @info "Starting adaptive sampling"
     flush(stdout)
     t= collect(1:save_after:length(inputs))
-    i_range = [ t[i-1]:t[i]-1  for i in 2:length(t) ]
+    i_range = [ t[i-1]:t[i]-1  for i in 2:lastindex(t) ]
     if t[end] < length(inputs)
         push!(i_range, t[end]:length(inputs))
     end
@@ -539,12 +538,11 @@ function create_inputs(cluster1::AbstractString,
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
-                max_e=15000,
-                unit="cm-1",
+                max_e=15000u"cm^-1",
                 npoints=10,
-                maxdis=9.0,
-                sstep=0.1,
-                startdistance=3.0
+                maxdis=9.0u"Å",
+                sstep=0.1u"Å",
+                startdistance=3.0u"Å"
                )
 
     c1 = read_xyz(cluster1)
@@ -554,7 +552,6 @@ function create_inputs(cluster1::AbstractString,
                 nlines=nlines,
                 nsamples=nsamples,
                 max_e=max_e,
-                unit=unit,
                 npoints=npoints,
                 maxdis=maxdis,
                 sstep=sstep,
@@ -568,12 +565,11 @@ function create_inputs(cluster1::AbstractString,
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
-                max_e=15000,
-                unit="cm-1",
+                max_e=15000u"cm^-1",
                 npoints=10,
-                maxdis=9.0,
-                sstep=0.1,
-                startdistance=3.0
+                maxdis=9.0u"Å",
+                sstep=0.1u"Å",
+                startdistance=3.0u"Å"
                )
 
     c1 = read_xyz(cluster1)
@@ -582,7 +578,6 @@ function create_inputs(cluster1::AbstractString,
                 nlines=nlines,
                 nsamples=nsamples,
                 max_e=max_e,
-                unit=unit,
                 npoints=npoints,
                 maxdis=maxdis,
                 sstep=sstep,
@@ -596,12 +591,11 @@ function create_inputs(cluster1,
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
-                max_e=15000,
-                unit="cm-1",
+                max_e=15000u"cm^-1",
                 npoints=10,
-                maxdis=9.0,
-                sstep=0.1,
-                startdistance=3.0
+                maxdis=9.0u"Å",
+                sstep=0.1u"Å",
+                startdistance=3.0u"Å"
                )
 
     c2 = read_xyz(cluster2)
@@ -610,7 +604,6 @@ function create_inputs(cluster1,
                 nlines=nlines,
                 nsamples=nsamples,
                 max_e=max_e,
-                unit=unit,
                 npoints=npoints,
                 maxdis=maxdis,
                 sstep=sstep,
@@ -623,17 +616,16 @@ function create_inputs(cluster1::AbstractCluster,
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
-                max_e=15000,
-                unit="cm-1",
+                max_e=15000u"cm^-1",
                 npoints=10,
-                maxdis=9.0,
-                sstep=0.1,
-                startdistance=3.0
+                maxdis=9.0u"Å",
+                sstep=0.1u"Å",
+                startdistance=3.0u"Å"
                )
 
 
     return  [InputAdaptiveSampler(calculator, cluster1, cluster2, nlines, max_e;
-                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  npoints=npoints, maxdis=maxdis,
                                   sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
 
@@ -642,17 +634,16 @@ function create_inputs(cluster1::AbstractCluster,
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
-                max_e=15000,
-                unit="cm-1",
+                max_e=15000u"cm^-1",
                 npoints=10,
-                maxdis=9.0,
-                sstep=0.1,
-                startdistance=3.0
+                maxdis=9.0u"Å",
+                sstep=0.1u"Å",
+                startdistance=3.0u"Å"
                )
 
 
     return  [InputAdaptiveSampler(calculator, cluster1, rand(cluster2), nlines, max_e;
-                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  npoints=npoints, maxdis=maxdis,
                                   sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
 
@@ -662,17 +653,16 @@ function create_inputs(cluster1::AbstractArray{<:AbstractCluster},
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
-                max_e=15000,
-                unit="cm-1",
+                max_e=15000u"cm^-1",
                 npoints=10,
-                maxdis=9.0,
-                sstep=0.1,
-                startdistance=3.0
+                maxdis=9.0u"Å",
+                sstep=0.1u"Å",
+                startdistance=3.0u"Å"
                )
 
 
     return  [InputAdaptiveSampler(calculator, rand(cluster1), cluster2, nlines, max_e;
-                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  npoints=npoints, maxdis=maxdis,
                                   sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
 
@@ -681,17 +671,16 @@ function create_inputs(cluster1::AbstractArray{<:AbstractCluster},
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
-                max_e=15000,
-                unit="cm-1",
+                max_e=15000u"cm^-1",
                 npoints=10,
-                maxdis=9.0,
-                sstep=0.1,
-                startdistance=3.0
+                maxdis=9.0u"Å",
+                sstep=0.1u"Å",
+                startdistance=3.0u"Å"
                )
 
 
     return  [InputAdaptiveSampler(calculator, rand(cluster1), rand(cluster2), nlines, max_e;
-                                  unit=unit, npoints=npoints, maxdis=maxdis,
+                                  npoints=npoints, maxdis=maxdis,
                                   sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
 

@@ -22,5 +22,5 @@ using PotentialCalculation.Sample
 
       t = line_sampler(formic_acid, tmp)
 
-      @test 2.0 <= minimum(distances(t[1][1], t[2][1]))
+      @test 2.0u"Å" <= minimum(distances(t[1][1], t[2][1]))
 end
