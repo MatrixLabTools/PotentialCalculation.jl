@@ -7,12 +7,14 @@ module Fileaccess
 
 
 
-export load_jld_data,
-       read_xyz,
-       save_jld_data
+export load_jld_data
+export read_xyz
+export save_jld_data
 
 
-using JLD
+#using JLD
+#using JLD2
+using FileIO
 
 using ..Atoms
 using ..Clusters
@@ -21,57 +23,18 @@ using ..Molecules
 
 
 """
-save_jld_data(fname::AbstractString, data::Dict)
+    save_jld_data(fname::AbstractString, data::Dict)
 
 Saves given data to file in jld format.
-
-Following keys are scanned from `data` and saved if present
-- Method
-- Basis
-- cluster1
-- cluster2
-- Points
-- Energy
-- restart_energy
 """
 function save_jld_data(fname::AbstractString, data::Dict)
-    k = keys(data)
-    jldopen(fname, "w") do file
-        if haskey(data,"Method")
-            file["Method"] = data["Method"]
-            @info "Method information saved"
-        end
-        if haskey(data,"Basis")
-            file["Basis"] = data["Basis"]
-            @info "Basis informaiton saved"
-        end
-        if haskey(data,"cluster1")
-            file["cluster1"] = data["cluster1"]
-            @info "cluster1 information saved"
-        end
-        if haskey(data,"cluster2")
-            file["cluster2"] = data["cluster2"]
-            @info "cluster2 information saved"
-        end
-        if haskey(data,"Points")
-            file["Points"] = data["Points"]
-            @info "Points information saved"
-        end
-        if haskey(data,"Energy")
-            file["Energy"] = data["Energy"]
-            @info "Energy information saved"
-        end
-        if haskey(data,"restart_energy")
-            file["restart_energy"] = data["restart_energy"]
-            @info "Restart information saved"
-        end
-    end
+    save(fname, data)
     @info "Data writing to file \"$(fname)\" done"
 end
 
 
 """
-load_jld_data(fname::AbstractString)
+    load_jld_data(fname::AbstractString)
 
 Loads data from file and returns it as a [`Dict`](@ref)
 """
@@ -79,7 +42,6 @@ function load_jld_data(fname::AbstractString)
     data = load(fname)
     return data
 end
-
 
 
 """
