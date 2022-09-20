@@ -1,28 +1,27 @@
 module Atoms
 
+using Unitful
+using UnitfulAtomic
 
-export m_electron, m_u, m_au, proton_mass, masses
+export proton_mass, masses
 
-export AbstractAtom,
-       AbstractAtomWithMass,
-       AtomOnlySymbol,
-       AtomWithMass
+export AbstractAtom
+export AbstractAtomWithMass
+export AtomOnlySymbol
+export AtomWithMass
 
 
 using ..IdenticalTools
 
 
-const m_electron = 9.10938291E-31
-const m_u = 1.660539040E-27
-const m_au = m_u/m_electron
-const proton_mass = 1836.0
-const masses =  Dict("H"  =>   1.00782503223*m_au,
-                     "O"  =>  15.99491461956*m_au,
-                     "C"  =>  12.0*m_au,
-                     "Ar" =>  39.9623831225*m_au,
-                     "N"  =>  14.0030740048*m_au,
-                     "D"  =>   2.01410177812*m_au,
-                     "Ne" =>  19.9924401762*m_au)
+const proton_mass = 1836.0u"me_au"
+const masses =  Dict("H"  =>   1.00782503223u"u",
+                     "O"  =>  15.99491461956u"u",
+                     "C"  =>  12.0u"u",
+                     "Ar" =>  39.9623831225u"u",
+                     "N"  =>  14.0030740048u"u",
+                     "D"  =>   2.01410177812u"u",
+                     "Ne" =>  19.9924401762u"u")
 
 
 
@@ -54,8 +53,11 @@ Atom that has symbol and mass
 struct AtomWithMass <: AbstractAtomWithMass
     id::String
     mass::Float64
-    AtomWithMass(id::AbstractString) = new(id,masses[id])
-    AtomWithMass(id::AbstractString, mass::Real) = new(id,mass)
+    AtomWithMass(id::AbstractString) = new(id, austrip(masses[id]) )
+    function AtomWithMass(id::AbstractString, mass)
+        @assert dimension(mass) == dimension(u"kg") || dimension(mass) == NoDims
+        new(id,austrip(mass))
+    end
 end
 
 
@@ -64,9 +66,3 @@ Base.convert(t::Type{<:AbstractAtom}, x::AbstractAtom) = t(x.id)
 
 end #module
 
-
-# This is for compability for older versions
-module atoms
-    using ..Atoms
-    AtomOnlySymbol = Atoms.AtomOnlySymbol
-end  # module atoms

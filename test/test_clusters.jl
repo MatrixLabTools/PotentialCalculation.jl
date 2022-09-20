@@ -52,7 +52,7 @@ using PotentialCalculation.Clusters
      for x in (formic_acid, nf)
          cc = center_coordinates(x)
          center_cluster!(x)
-         @test all(abs.(center_coordinates(x)) .< 1E-12 .* ones(size(cc)))
+         @test all(abs.(center_coordinates(x)) .< 1E-12u"Å" .* ones(size(cc)))
      end
 
      l = distances(formic_acid, 2,4)
