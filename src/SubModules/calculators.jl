@@ -316,7 +316,7 @@ Deletes files that calculations produced
 function clean_calculation_files(;dir=".", basename="base")
     filenames=readdir(dir)
     # There is a  possible exploit here related to basename
-    i = map( x -> occursin(basename*".", x) || occursin(basename*"_", x), filenames)
+    i = map( x -> occursin(basename*".", x) || occursin(basename*"_", x), filenames)
     rm.(filenames[i])
 end
 

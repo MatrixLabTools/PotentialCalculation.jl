@@ -7,10 +7,10 @@ addprocs(2)
 @everywhere using PotentialCalculation
 @everywhere using PotentialCalculation.psi4
 
-fname = tempname()
-rname = tempname()
-sname = tempname()
-xyzname = tempname()
+fname = tempname() * ".jld2"
+rname = tempname() * ".jld2"
+sname = tempname() * ".jld2"
+xyzname = tempname() * ".xyz"
 
 formic_acid=Cluster(
  [-6.7041359778      1.3501192944      0.0102209137

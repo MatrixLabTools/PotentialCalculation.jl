@@ -12,8 +12,6 @@ export read_xyz
 export save_jld_data
 
 
-#using JLD
-#using JLD2
 using FileIO
 
 using ..Atoms
