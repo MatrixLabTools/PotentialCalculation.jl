@@ -38,13 +38,13 @@ trajfile="Some trajectory.xyz"
 
 # Create input for calculations
 inputs = create_inputs(
-            trajfile,    # First molecule will be picked from here
-            Ar,          # Second molecule will be picked from here
-            mp2;         # Calculator to do electronic structure calculations
-            nsaples=32,  # How many lines are calculated
-            max_e=10000, # Maximum energy in cm⁻¹ -
-                         #   limit to areas where energy is less than this
-            npoints=50   # Number of points per line
+            trajfile,            # First molecule will be picked from here
+            Ar,                  # Second molecule will be picked from here
+            mp2;                 # Calculator to do electronic structure calculations
+            nsaples=32,          # How many lines are calculated
+            max_e=10000u"cm^-1", # Maximum energy in cm⁻¹ -
+                                 #   limit to areas where energy is less than this
+            npoints=50           # Number of points per line
         )  
 
 # Do calculation
