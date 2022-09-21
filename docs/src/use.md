@@ -18,7 +18,6 @@ using Distributed
 !!! note "Note"
     Do not forget to use `@everywhere` macro when importing PotentialCalculation!
 
-
 Creating inputs and doing basic calculation, where two molecules are calculated
 with various distances and orientations from each other.
 
@@ -54,8 +53,6 @@ data = calculate_potential(inputs, save_file="save file")
 The molecules used in the input can be created by hand or read from
 xyz-trajectory (recommended). If trajectory file (or array of [`Cluster`](@ref))
 are used, then random points of them are picked for the calculation.
-
-
 
 New calculations with different method can be done on previous points.
 
@@ -115,6 +112,7 @@ Psi4(
    nthreads=1,
 )
 ```
+
 You need to import Psi4 explicitly with `using PotentialCalculation.psi4`. All
 Psi4 global environmental variables are present. To access them you need to use
 `PotentialCalculation.psi4.gPsi4`-handel after using
@@ -127,6 +125,7 @@ to create Calculator structure that has all the information needed to perform
 electronic structure calculations.
 
 This is done with
+
 ```julia
 Calculator(
    "Method",
@@ -145,6 +144,7 @@ then verrified to be acceptable, which cane be done with visualization tools fro
 [PotentialFitting](https://github.com/MatrixLabTools/PotentialFitting.jl).
 
 General points are:
+
 - `npoints` needs to be at least 50 for potential to catch rapid changes around
   minimum.
 - `max_e` defines usability of the potential, if you just need simple spectrum
@@ -184,7 +184,6 @@ Third phase is fitting of potential and that is done with
 ### 4. Storing/Sharing potential
 
 To store or share potential you can use [PotentialDB](https://github.com/MatrixLabTools/PotentialDB.jl).
-
 
 ## Using with SLURM/PBS etc.
 
