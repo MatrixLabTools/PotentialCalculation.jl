@@ -1,6 +1,5 @@
 # [PotentialCalculation.jl Documentation](@id PotentialCalculation.jl)
 
-
 [PotentialCalculation](https://github.com/MatrixLabTools/PotentialCalculation.jl),
 [PotentialFitting](https://github.com/MatrixLabTools/PotentialFitting.jl)
 and [PotentialDB](https://github.com/MatrixLabTools/PotentialDB.jl) together
@@ -26,7 +25,6 @@ experiments.
 - Store computed data
 - Public storage to computed data
 - Easily manage calculated potentials
-
 
 ## Contents
 
