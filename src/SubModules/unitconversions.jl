@@ -1,8 +1,14 @@
 module UnitConversions
 
-export change_energy_unit,
-       energy_from,
-       energy_to
+using Unitful
+using UnitfulAtomic
+using UnitfulEquivalences
+
+
+
+export change_energy_unit
+export energy_from
+export energy_to
 
 
 
@@ -39,6 +45,11 @@ function energy_to(e, unit)
     end
 end
 
+
+function energy_to(e, u::Unitful.EnergyUnits)
+    return (ustrip ∘ uconvert)(u, e*u"hartree")
+end
+
 """
     energy_from(e, unit)
 
@@ -70,6 +81,18 @@ function energy_from(e, unit)
     else
         return e
     end
+end
+
+function energy_from(e::Unitful.Energy)
+    return austrip(e)
+end
+
+function energy_from(e::Unitful.Wavenumber)
+    return (ustrip ∘ uconvert)(u"hartree", e, Spectral())
+end
+
+function energy_from(e::Unitful.Frequency)
+    return (ustrip ∘ uconvert)(u"hartree", e, Spectral())
 end
 
 

@@ -11,13 +11,14 @@ Currently there are two backends, [ORCA](https://orcaforum.kofo.mpg.de)
 and [Psi4](http://www.psicode.org/). To do any calculation, you need to have
 at least one of these installed.
 
-
-### Testing installation
+## Testing installation
 
 ```julia
 pkg> test PotentialCalculation
 ```
+
 checking for backends is made:
+
 - Search PATH for `orca`-executable, for ORCA backend
 - Trying to import psi4 python module
 If either of these succeeds then that backend is tested.

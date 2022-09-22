@@ -1,16 +1,19 @@
 module Sample
 
-export line_sampler, adaptive_line_sampler, sample_multiple_adaptive_lines,
-       InputAdaptiveSampler
-
 using LinearAlgebra
 using ProgressMeter
 using Rotations
+using Unitful
 using ..Atoms
 using ..Calculators
 using ..Clusters
 using ..UnitConversions
 
+
+export adaptive_line_sampler
+export InputAdaptiveSampler
+export line_sampler
+export sample_multiple_adaptive_lines
 
 
 """
@@ -54,7 +57,7 @@ Sampling is done by first generating random direction and placing `cl2` in that
 direction from `cl2` at `mindis` and then picking `npoints` in even distances
 to `maxdis`.
 """
-function line_sampler(cl1::Cluster, cl2::Cluster; npoints=10, mindis=2.0, maxdis=9.0)
+function line_sampler(cl1::Cluster, cl2::Cluster; npoints=10, mindis=2.0u"Å", maxdis=9.0u"Å")
     c1 = deepcopy(cl1)
     c2 = deepcopy(cl2)
 
@@ -86,7 +89,6 @@ has energy lower than `max_e`
 - `max_e`           : Point that is closest and has less energy than this will be starting point for a line
 
 # Keywords
-- `unit`            : Unit in which `max_e` is given
 - `npoints`         : Number of points in potential
 - `maxdis`          : Maximum distance in potential calculation
 - `sstep`           : Search step size for adaptive search, also defines accuracy of search
@@ -95,8 +97,8 @@ has energy lower than `max_e`
 - `id=""`           : extra identificaltion to help to do parallel computations
 - `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_e=0;
-                               unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0,
+function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_e=0u"cm^-1";
+                               npoints=10, maxdis=9.0u"Å", sstep=0.1, startdistance=3.0u"Å",
                                basename="base", id="", pchannel=undef)
     @debug "Starting adaptive_line_sampler"
 
@@ -127,7 +129,7 @@ function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_
     # We need to find a point where potential energy is emax
     # To do this we find the most distant point where energy is more than emax
     # and the closest point where energy is less than e
-    emax = energy_from(max_e, unit)
+    emax = energy_from(max_e)
     Δe = bsse_corrected_energy(cal, [c1], [c2], basename=basename, id=id, pchannel=pchannel) .- emax
     ctemp = [deepcopy(c2)] # History for points we tried
     fless = false # We have a point where Δe < 0
@@ -184,17 +186,18 @@ end
 
 
 """
-    InputAdaptiveSampler
+    InputAdaptiveSampler(Arguments...; Keywords...)
 
 Structure used to help use of adaptive line samplers
 
-# Fields
+# Arguments
 - `cal::Calculator`   : [`calculator`](@ref) used in calculations
 - `cl1::Cluster`      : first cluster
 - `cl2::Cluster`      : second cluster
 - `nlines`            : number of lines calculated
 - `max_e`             : maximum energy for configuration
-- `unit=`             : unit for maximum energy ( see [`energy_from`](@ref) for supported units)
+
+# Keywords
 - `npoints`           : number of points in line
 - `maxdis`            : maximum cluster distance
 - `sstep`             : search step used by [`adaptive_line_sampler`](@ref)
@@ -206,21 +209,20 @@ mutable struct InputAdaptiveSampler
     # wich is intended to be done with this struct
 
     # TODO clean this - it is way too messy now
-    cal
-    cl1
-    cl2
+    cal::Calculator
+    cl1::Cluster
+    cl2::Cluster
     nlines
     max_e
-    unit
     npoints
     maxdis
     sstep
     startdistance
     function InputAdaptiveSampler(cal::Calculator, cl1::Cluster, cl2::Cluster,
-                                  nlines, max_e=0;
-                                  unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1,
-                                  startdistance=3.0)
-        new(cal,cl1,cl2,nlines,max_e,unit,npoints,maxdis,sstep,startdistance)
+                                  nlines, max_e=0u"cm^-1";
+                                  npoints=10, maxdis=9.0u"Å", sstep=0.1u"Å",
+                                  startdistance=3.0u"Å")
+        new(cal, cl1, cl2, nlines, max_e,npoints,maxdis,sstep,startdistance)
     end
 end
 
@@ -240,7 +242,6 @@ Sampling of line is done with [`adaptive_line_sampler`](@ref).
 - `cl2::Cluster`      : second cluster
 - `nlines`            : number of lines calculated
 - `max_e=0`           : maximum energy for configuration
-- `unit="cm-1"`       : unit for maximum energy ( see [`energy_from`](@ref) for supported units)
 - `npoints=10`        : number of points in line
 - `maxdis=9.0`        : maximum cluster distance
 - `sstep=0.1`         : search step used by [`adaptive_line_sampler`](@ref)
@@ -255,8 +256,8 @@ Sampling of line is done with [`adaptive_line_sampler`](@ref).
 * "Points" : array of [`Cluster`](@ref) representing points where energy was calculated
 * "Mindis" : array of minimum distances in each line
 """
-function sample_multiple_adaptive_lines(cal::Calculator, cl1::Cluster, cl2::Cluster, nlines, max_e=0;
-                               unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0,
+function sample_multiple_adaptive_lines(cal::Calculator, cl1::Cluster, cl2::Cluster, nlines, max_e=0u"cm^-1";
+                               npoints=10, maxdis=9.0u"Å", sstep=0.1u"Å", startdistance=3.0,
                                basename="base", id="", pchannel=undef)
     c1 = deepcopy(cl1)
     c2 = deepcopy(cl2)
@@ -264,10 +265,10 @@ function sample_multiple_adaptive_lines(cal::Calculator, cl1::Cluster, cl2::Clus
     rtmp = Float64[]
     sr = startdistance
     for i in 1:nlines
-        tmp = adaptive_line_sampler(cal, c1, c2, max_e; unit=unit, npoints=npoints,
+        tmp = adaptive_line_sampler(cal, c1, c2, max_e; npoints=npoints,
                                     maxdis=maxdis, startdistance=sr, basename=basename,
-                                     id=id, pchannel=pchannel)
-        push!(rtmp, tmp["Mindis"])
+                                     id=id, pchannel=pchannel, sstep=sstep)
+        push!(rtmp, (ustrip ∘ uconvert)(u"Å", tmp["Mindis"] ))
         sr = sum(rtmp) / length(rtmp)
         out[i] = tmp
     end
@@ -298,10 +299,21 @@ Sampling of line is done with [`adaptive_line_sampler`](@ref).
 * "Mindis" : array of minimum distances in each line
 """
 function sample_multiple_adaptive_lines(inputs::InputAdaptiveSampler; basename="base", id="", pchannel=undef)
-    sample_multiple_adaptive_lines(inputs.cal, inputs.cl1, inputs.cl2,
-                 inputs.nlines, inputs.max_e,
-                 unit=inputs.unit, npoints=inputs.npoints, maxdis=inputs.maxdis,
-                 startdistance=inputs.startdistance, basename=basename, id=id, pchannel=pchannel)
+    sample_multiple_adaptive_lines(
+        inputs.cal,
+        inputs.cl1,
+        inputs.cl2,
+        inputs.nlines,
+        inputs.max_e;
+
+        sstep=inputs.sstep,
+        npoints=inputs.npoints,
+        maxdis=inputs.maxdis,
+        startdistance=inputs.startdistance,
+        basename=basename,
+        id=id,
+        pchannel=pchannel
+    )
 end
 
 end  # module sample

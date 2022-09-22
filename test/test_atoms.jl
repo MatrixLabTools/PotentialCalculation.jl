@@ -1,5 +1,5 @@
 using Test
-using PotentialCalculation.Atoms
+using PotentialCalculation
 
 @testset "atoms" begin
 
@@ -10,10 +10,10 @@ using PotentialCalculation.Atoms
 
     @test a.id == am.id
 
-    x = AtomWithMass("x", 3.2)
+    x = AtomWithMass("x", 3.2u"u")
 
     O = AtomWithMass("O")
 
-    @test am.mass == masses["H"]
-    @test O.mass == masses["O"]
+    @test am.mass == austrip( masses["H"] )
+    @test O.mass == austrip( masses["O"] )
 end

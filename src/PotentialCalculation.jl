@@ -2,6 +2,8 @@ module PotentialCalculation
 
 using Reexport
 
+@reexport using Unitful
+@reexport using UnitfulAtomic
 
 include("SubModules/identical.jl")
 @reexport using .IdenticalTools

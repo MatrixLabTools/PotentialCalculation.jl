@@ -1,20 +1,20 @@
 module Clusters
 
-export AbstractCluster,
-       AbstractClusterWithSymbols,
-       center_cluster!,
-       center_coordinates,
-       Cluster,
-       cluster_angle,
-       ClusterNoSymbols,
-       dihedral_angle,
-       distances,
-       move!,
-       print_xyz,
-       rotate_x!,
-       rotate_y!,
-       rotate_z!,
-       rotate_randomly!
+export AbstractCluster
+export AbstractClusterWithSymbols
+export center_cluster!
+export center_coordinates
+export Cluster
+export cluster_angle
+export ClusterNoSymbols
+export dihedral_angle
+export distances
+export move!
+export print_xyz
+export rotate_x!
+export rotate_y!
+export rotate_z!
+export rotate_randomly!
 
 
 
@@ -22,6 +22,8 @@ using ..Atoms
 using Distances: Euclidean, pairwise, euclidean
 using LinearAlgebra
 using Rotations
+using Unitful
+using UnitfulAtomic
 
 import Base.==, Base.+
 
@@ -144,7 +146,7 @@ end
 Return distances between atoms of given clusters
 """
 function distances(c1::AbstractCluster, c2::AbstractCluster)
-    return pairwise(Euclidean(),c1.xyz,c2.xyz,dims=2)
+    return pairwise(Euclidean(),c1.xyz,c2.xyz,dims=2) .* u"Å"
 end
 
 """
@@ -153,7 +155,7 @@ end
 Returns distances between atoms in given unit ranges
 """
 function distances(c::AbstractCluster, ur1::AbstractUnitRange, ur2::AbstractUnitRange)
-    return pairwise(Euclidean(),c.xyz[:,ur1],c.xyz[:,ur2],dims=2)
+    return pairwise(Euclidean(),c.xyz[:,ur1],c.xyz[:,ur2],dims=2) .* u"Å"
 end
 
 """
@@ -162,7 +164,7 @@ end
 Returns distance of atoms `i` and `j`
 """
 function distances(c::AbstractCluster, i, j)
-    return euclidean(c.xyz[:,i], c.xyz[:,j])
+    return euclidean(c.xyz[:,i], c.xyz[:,j]) .* u"Å"
 end
 
 """
@@ -171,7 +173,7 @@ end
 Return distance between atom `i` in `c1` and atom `j` in `c2`
 """
 function distances(c1::AbstractCluster, i, c2::AbstractCluster, j)
-    return euclidean(c1.xyz[:,i], c2.xyz[:,j])
+    return euclidean(c1.xyz[:,i], c2.xyz[:,j]) .* u"Å"
 end
 
 """
@@ -182,7 +184,7 @@ Return distance between atoms `ur1` in `c1` and atoms `ur2` in `c2`
 """
 function distances(c1::AbstractCluster, ur1::AbstractUnitRange,
                    c2::AbstractCluster, ur2::AbstractUnitRange)
-    return pairwise(Euclidean(),c1.xyz[:,ur1],c2.xyz[:,ur2],dims=2)
+    return pairwise(Euclidean(),c1.xyz[:,ur1],c2.xyz[:,ur2],dims=2) .* u"Å"
 end
 
 """
@@ -191,8 +193,11 @@ end
 Gives coordinates to aricmetric mean of clusters atoms
 """
 function center_coordinates(c::AbstractCluster)
-    return sum(c.xyz, dims=2) / length(c)
+    return sum(c.xyz, dims=2) ./ length(c) .* u"Å"
 end
+
+
+Unitful.uconvert(::typeof(u"Å"), r::Real) = r*u"Å"
 
 """
     move!(c::AbstractCluster,r)
@@ -200,7 +205,8 @@ end
 Moves cluster by `r`
 """
 function move!(c::AbstractCluster,r)
-    c.xyz .+= r
+    tmp = @. uconvert(u"Å", r) |> ustrip
+    c.xyz .+= tmp
 end
 
 """
@@ -320,10 +326,3 @@ function dihedral_angle(c::AbstractCluster, i, j, k, m)
 end
 
 end #module Clusters
-
-
-# This is for compability for older versions
-module clusters
-    using ..Clusters
-    cluster = Clusters.Cluster
-end #module clusters
