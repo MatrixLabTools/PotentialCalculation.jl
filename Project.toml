@@ -1,7 +1,7 @@
 name = "PotentialCalculation"
 uuid = "76415700-ec45-11e8-0f65-f1df3c899b21"
 authors = ["Teemu Järvinen <teemu.j.jarvinen@student.jyu.fi>"]
-version = "0.4.0"
+version = "0.4.1-DEV"
 
 [deps]
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
@@ -25,5 +25,7 @@ ProgressMeter = "1.2"
 PyCall = "1.90"
 Reexport = "1.0"
 Rotations = "1.0"
+Unitful = "1"
+UnitfulAtomic = "1"
 UnitfulEquivalences = "0.2"
 julia = "1.6"
