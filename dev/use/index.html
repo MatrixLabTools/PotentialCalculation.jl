@@ -15,13 +15,13 @@ trajfile=&quot;Some trajectory.xyz&quot;
 
 # Create input for calculations
 inputs = create_inputs(
-            trajfile,    # First molecule will be picked from here
-            Ar,          # Second molecule will be picked from here
-            mp2;         # Calculator to do electronic structure calculations
-            nsaples=32,  # How many lines are calculated
-            max_e=10000, # Maximum energy in cm⁻¹ -
-                         #   limit to areas where energy is less than this
-            npoints=50   # Number of points per line
+            trajfile,            # First molecule will be picked from here
+            Ar,                  # Second molecule will be picked from here
+            mp2;                 # Calculator to do electronic structure calculations
+            nsaples=32,          # How many lines are calculated
+            max_e=10000u&quot;cm^-1&quot;, # Maximum energy in cm⁻¹ -
+                                 #   limit to areas where energy is less than this
+            npoints=50           # Number of points per line
         )  
 
 # Do calculation
@@ -64,4 +64,4 @@ Psi4(
 using ClusterManagers
 
 addprocs_slurm(number_of_processes) # ntasks option in Slurm job file
-@everywhere using PotentialCalculation</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../install/">« Install</a><a class="docs-footer-nextpage" href="../reference/">References »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 24 March 2021 16:09">Wednesday 24 March 2021</span>. Using Julia version 1.5.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+@everywhere using PotentialCalculation</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../install/">« Install</a><a class="docs-footer-nextpage" href="../reference/">References »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 2 October 2022 13:40">Sunday 2 October 2022</span>. Using Julia version 1.8.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
