@@ -29,7 +29,7 @@ If unit is not recognized defaults to hartree.
 
 Source is [Wikipedia](https://en.wikipedia.org/wiki/Hartree)
 """
-function energy_to(e, unit)
+function energy_to(e, unit::AbstractString)
     if unit in ["cm-1", "cm^-1", "cm⁻¹"]
         return e*219474.6313702
     elseif unit in ["ev", "eV"]
@@ -49,6 +49,11 @@ end
 function energy_to(e, u::Unitful.EnergyUnits)
     return (ustrip ∘ uconvert)(u, e*u"hartree")
 end
+
+function energy_to(e, u)
+    return (ustrip ∘ uconvert)(u, e*u"hartree", Spectral())
+end
+
 
 """
     energy_from(e, unit)
