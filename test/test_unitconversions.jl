@@ -17,5 +17,5 @@ using PotentialCalculation
     @test e2 == energy_from(e2, "hartree")
     @test e2 == energy_to(e2, "hartree")
     @test energy_to(e2, "cm^-1") ≈ energy_to(e2, u"cm^-1")
-    @test energy_from(e1, u"cm^-1") ≈ energy_from(e1*u"cm^-1")
+    @test energy_from(e1, "cm^-1") ≈ energy_from(e1*u"cm^-1")
 end
