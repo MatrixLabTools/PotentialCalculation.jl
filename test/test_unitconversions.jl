@@ -1,5 +1,5 @@
 using Test
-using PotentialCalculation.UnitConversions
+using PotentialCalculation
 
 @testset "UnitConversions" begin
     e1 = 32.42
@@ -16,4 +16,6 @@ using PotentialCalculation.UnitConversions
     @test e2 ≈ change_energy_unit(e2, "eV", "eV")
     @test e2 == energy_from(e2, "hartree")
     @test e2 == energy_to(e2, "hartree")
+    @test energy_to(e2, "cm^-1") ≈ energy_to(e2, u"cm^-1")
+    @test energy_from(e1, u"cm^-1") ≈ energy_from(e1*u"cm^-1")
 end
