@@ -17,11 +17,12 @@ export rotate_z!
 export rotate_randomly!
 
 
-
+using AtomsBase
 using ..Atoms
 using Distances: Euclidean, pairwise, euclidean
 using LinearAlgebra
 using Rotations
+using StaticArrays
 using Unitful
 using UnitfulAtomic
 
@@ -324,5 +325,40 @@ function dihedral_angle(c::AbstractCluster, i, j, k, m)
     t2 = dot(cross(r1,r2), cross(r2,r3))
     return atan( dot(t1, r2./norm(r2)), t2 )
 end
+
+
+
+## AtomsBase support
+
+function AtomsBase.bounding_box(::AbstractCluster)
+    a = SVector{3}( [Inf, 0., 0.] .* u"bohr" )
+    b = SVector{3}( [0., Inf, 0.] .* u"bohr" )
+    c = SVector{3}( [0., 0., Inf] .* u"bohr" )
+    return SVector(a, b, c)
+end
+
+
+function AtomsBase.boundary_conditions(::AbstractCluster)
+    return SVector{3, BoundaryCondition}(DirichletZero(), DirichletZero(), DirichletZero())
+end
+
+
+function Cluster(sys::AtomsBase.FlexibleSystem)
+    a = AtomOnlySymbol.( atomic_symbol(sys) )
+    pos = map( position(sys) ) do r
+        ustrip.(u"Å", r)
+    end
+    return Cluster(hcat(pos...), a)
+end
+
+
+function AtomsBase.FlexibleSystem(c::Cluster)
+    a = [
+        Symbol(c.atoms[i].id) => SVector{3}( c.xyz[:,i] .*u"Å")
+        for i in 1:length(c)
+    ]
+    return isolated_system(a)
+end
+
 
 end #module Clusters

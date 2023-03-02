@@ -2,6 +2,7 @@ using Test
 using PotentialCalculation.IdenticalTools
 using PotentialCalculation.Atoms
 using PotentialCalculation.Clusters
+using AtomsBase
 
 
 
@@ -89,4 +90,10 @@ using PotentialCalculation.Clusters
      @test_throws DimensionMismatch Cluster(rand(3),AtomOnlySymbol.(["H", "O"]))
      @test_throws DimensionMismatch Cluster(rand(3,3),AtomOnlySymbol.(["H", "O"]))
      @test_throws DimensionMismatch Cluster(rand(4,2),AtomOnlySymbol.(["H", "O"]))
+
+     # AtomsBase 
+     fa = FlexibleSystem(formic_acid)
+     cfa = Cluster(fa)
+     @test cfa.atoms == formic_acid.atoms
+     @test cfa.xyz == formic_acid.xyz
 end
