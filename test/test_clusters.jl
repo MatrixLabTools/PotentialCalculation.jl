@@ -93,6 +93,8 @@ using AtomsBase
 
      # AtomsBase 
      fa = FlexibleSystem(formic_acid)
+     pf = FlexibleSystem(formic_acid; e=1)
+     @test haskey(pf, :e)
      cfa = Cluster(fa)
      @test cfa.atoms == formic_acid.atoms
      @test cfa.xyz == formic_acid.xyz

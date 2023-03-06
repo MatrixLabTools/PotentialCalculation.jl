@@ -352,12 +352,12 @@ function Cluster(sys::AtomsBase.FlexibleSystem)
 end
 
 
-function AtomsBase.FlexibleSystem(c::Cluster)
+function AtomsBase.FlexibleSystem(c::Cluster; kwargs...)
     a = [
         Symbol(c.atoms[i].id) => SVector{3}( c.xyz[:,i] .*u"Å")
         for i in 1:length(c)
     ]
-    return isolated_system(a)
+    return isolated_system(a; kwargs...)
 end
 
 
