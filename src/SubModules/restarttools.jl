@@ -49,7 +49,7 @@ function write_save_file(
     energy,
     cluster1,
     cluster2
-)
+    )
     data = Dict("Energy" => energy, "Points" => points, "cluster1" => cluster1, "cluster2" => cluster2,
                 "Basis" => calculator.basis, "Method" => calculator.method )
     flush(stdout)
@@ -77,7 +77,7 @@ function write_restart_file(
     restart_energy,
     cluster1,
     cluster2
-)
+    )
     @info "Writing restart file $(fname)"
     data = Dict("restart_energy" => restart_energy, "Points" => points, "cluster1" => cluster1, "cluster2" => cluster2,
                 "Basis" => calculator.basis, "Method" => calculator.method )

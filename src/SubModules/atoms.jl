@@ -1,5 +1,6 @@
 module Atoms
 
+using AtomsBase
 using Unitful
 using UnitfulAtomic
 
@@ -40,6 +41,13 @@ struct AtomOnlySymbol <: AbstractAtom
     id::String
 end
 
+function AtomOnlySymbol(a::AtomsBase.Atom)
+    return AtomOnlySymbol(String(atomic_symbol(a)))
+end
+
+function AtomOnlySymbol(s::Symbol)
+    return AtomOnlySymbol(String(s))
+end
 
 """
     AtomWithMass <: AbstractAtomWithMass

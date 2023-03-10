@@ -26,6 +26,20 @@ using ..Molecules
 Saves given data to file in jld format.
 """
 function save_jld_data(fname::AbstractString, data::Dict)
+    # Make saved data independed of Cluster type
+    points = data["Points"]
+    xyz = [ p.xyz for p in points ]
+    symbols = map(x->x.id, points[1].atoms)
+    cluster1 = 1:length(data["cluster1"])
+    cluster2 = last(cluster1)+1 : last(cluster1) + length(data["cluster2"])
+
+    new_data = filter( data ) do (key,val)
+        ! ( key in ["Points", "cluster1", "cluster2"] )
+    end
+    new_data["cluster1"] = cluster1
+    new_data["cluster2"] = cluster2
+    new_data["symbols"] = symbols
+    new_data["xyz"] = xyz
     save(fname, data)
     @info "Data writing to file \"$(fname)\" done"
 end
@@ -38,7 +52,24 @@ Loads data from file and returns it as a [`Dict`](@ref)
 """
 function load_jld_data(fname::AbstractString)
     data = load(fname)
-    return data
+    if haskey(data, "Points") # Old format
+        # Has Cluster data in the save file
+        return data
+    else
+        # Construct clusters
+        atoms = AtomOnlySymbol.(data["symbols"])
+        points = [ Cluster(xyz, atoms) for xyz in data["xyz"] ]
+        cluster1 = points[1][data["cluster1"]]
+        cluster2 = points[1][data["cluster2"]]
+
+        new_data = filter( data ) do (key,val)
+            ! ( key in ["xyz", "cluster1", "cluster2", "symbols"] )
+        end
+        new_data["Points"] = points
+        new_data["cluster1"] = cluster1
+        new_data["cluster2"] = cluster2
+        return new_data
+    end
 end
 
 
