@@ -361,31 +361,4 @@ function AtomsBase.FlexibleSystem(c::Cluster; kwargs...)
     return isolated_system(a; kwargs...)
 end
 
-## ExtXYZ conversion tools
-
-function ExtXYZ.write_dict(c::Cluster; kwargs...)
-    d = Dict{String,Any}()
-    arrays = Dict{String,Any}()
-    info = Dict{String,Any}( String(p.first) => p.second for p in kwargs )
-    if ! haskey(info, "comment")
-        info["comment"] = ""
-    end
-    arrays["pos"] = c.xyz
-    arrays["species"] = [ x.id for x in c.atoms ]
-    d["N_atoms"] = length(c)
-    d["arrays"] = arrays
-    d["info"] = info
-    return d
-end
-
-function Cluster(d::Dict{String, Any})
-    @assert haskey(d, "N_atoms")
-    @assert haskey(d, "arrays")
-
-    pos = d["arrays"]["pos"]
-    a = AtomOnlySymbol.(d["arrays"]["species"])
-    c = Cluster( pos, a )
-    return c
-end
-
 end #module Clusters
