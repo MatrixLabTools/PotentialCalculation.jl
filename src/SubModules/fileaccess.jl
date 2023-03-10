@@ -33,8 +33,8 @@ function save_jld_data(fname::AbstractString, data::Dict)
     cluster1 = 1:length(data["cluster1"])
     cluster2 = last(cluster1)+1 : last(cluster1) + length(data["cluster2"])
 
-    new_data = filter( data ) do x
-        ! ( x.first in ["Points", "cluster1", "cluster2"] )
+    new_data = filter( data ) do (key,val)
+        ! ( key in ["Points", "cluster1", "cluster2"] )
     end
     new_data["cluster1"] = cluster1
     new_data["cluster2"] = cluster2
@@ -62,8 +62,8 @@ function load_jld_data(fname::AbstractString)
         cluster1 = points[1][data["cluster1"]]
         cluster2 = points[1][data["cluster2"]]
 
-        new_data = filter( data ) do x
-            ! ( x.first in ["xyz", "cluster1", "cluster2", "symbols"] )
+        new_data = filter( data ) do (key,val)
+            ! ( key in ["xyz", "cluster1", "cluster2", "symbols"] )
         end
         new_data["Points"] = points
         new_data["cluster1"] = cluster1
