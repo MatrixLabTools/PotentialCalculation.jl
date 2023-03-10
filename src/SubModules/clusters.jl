@@ -20,7 +20,6 @@ export rotate_randomly!
 using AtomsBase
 using ..Atoms
 using Distances: Euclidean, pairwise, euclidean
-using ExtXYZ
 using LinearAlgebra
 using Rotations
 using StaticArrays
