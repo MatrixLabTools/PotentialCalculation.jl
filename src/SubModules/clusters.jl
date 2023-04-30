@@ -30,7 +30,7 @@ import Base.==, Base.+
 
 
 
-abstract type AbstractCluster end
+abstract type AbstractCluster <: AbstractSystem{3} end
 abstract type AbstractClusterWithSymbols{T} <: AbstractCluster where T<:AbstractAtom end
 
 """
@@ -116,7 +116,7 @@ function (+)(c1::ClusterNoSymbols, c2::ClusterNoSymbols)
 end
 
 
-function Base.getindex(C::Cluster, i::Int)
+function (C::Cluster)(i::Int)
     return Cluster(C.xyz[:,i], [C.atoms[i]])
 end
 
@@ -124,8 +124,16 @@ function Base.getindex(C::ClusterNoSymbols, i::Int)
     return ClusterNoSymbols(C.xyz[:,i])
 end
 
+function Base.getindex(c::Cluster, i::Int)
+    Atom( atomic_symbol(c,i), position(c,i) )
+end
 
-function Base.getindex(C::Cluster, i::AbstractUnitRange)
+
+function Base.getindex(c::Cluster, s::Symbol)
+    [ x for x in c if atomic_symbol(x) == s ]
+end
+
+function (C::Cluster)(i::AbstractUnitRange)
     return Cluster(C.xyz[:,i], C.atoms[i])
 end
 
@@ -330,6 +338,21 @@ end
 
 ## AtomsBase support
 
+# function Base.iterate(c::Cluster, i=0)
+#     if i < length(c)
+#         return c[i+1], i+1
+#     else
+#         return nothing
+#     end
+# end
+
+AtomsBase.species_type(::Cluster) = Atom
+
+AtomsBase.atomkeys(::Cluster) = (:atomic_symbol, :position)
+
+Base.keys(::Cluster) = (:bounding_box, :boundary_conditions)
+
+
 function AtomsBase.bounding_box(::AbstractCluster)
     a = SVector{3}( [Inf, 0., 0.] .* u"bohr" )
     b = SVector{3}( [0., Inf, 0.] .* u"bohr" )
@@ -359,5 +382,15 @@ function AtomsBase.FlexibleSystem(c::Cluster; kwargs...)
     ]
     return isolated_system(a; kwargs...)
 end
+
+
+function AtomsBase.position(c::Cluster, i::Int)
+    return SVector( c.xyz[:,i]... ) .* u"Å"
+end
+
+function AtomsBase.atomic_symbol(c::Cluster,i::Int)
+    return Symbol(c.atoms[i].id)
+end
+
 
 end #module Clusters
