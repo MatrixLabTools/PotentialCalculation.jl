@@ -65,7 +65,7 @@ using AtomsBase
 
      # AtomsBase 
      fa = FlexibleSystem(formic_acid)
-     pf = FlexibleSystem(collect(formic_acid); e=1)
+     pf = isolated_system(collect(formic_acid); e=1)
      @test haskey(pf, :e)
      cfa = Cluster(fa)
      @test all( atomic_symbol(cfa) .== atomic_symbol(formic_acid) )
