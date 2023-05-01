@@ -64,9 +64,9 @@ using AtomsBase
      @test_throws DimensionMismatch Cluster(rand(4,2),AtomOnlySymbol.(["H", "O"]))
 
      # AtomsBase 
-     fa = FlexibleSystem(formic_acid)
-     pf = isolated_system(collect(formic_acid); e=1)
-     @test haskey(pf, :e)
+     fa = FlexibleSystem(formic_acid; e=1)
+     pf = Cluster(collect(formic_acid))
+     @test haskey(fa, :e)
      cfa = Cluster(fa)
      @test all( atomic_symbol(cfa) .== atomic_symbol(formic_acid) )
      @test all( position(cfs) .== position(formic_acid) )
