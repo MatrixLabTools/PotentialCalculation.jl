@@ -24,6 +24,7 @@ using ..Calculators
 using ..Clusters
 using ..Fileaccess
 using ..Sample
+using AtomsBase
 using Distributed
 using ProgressMeter
 using Unitful
@@ -509,24 +510,7 @@ function calculate_adaptive_sample_inputs(inputs::AbstractArray{InputAdaptiveSam
  end
 
 
-"""
-    create_inputs(cluster1, cluster2, calculator::Calculator;  kwargs...)
-
-
-
-Creates inputs for the calculations. Use [`calculate_adaptive_sample_inputs`](@ref) on
-results to do the calculation itself.
-
-Inputs for the molecules (named cluster1/2) can be loaded from xyz-file or given by as
-[`Cluster`](@ref) structures. If given as file names, then `nsamples` points are randomly
-picked from the trajectories for calculation. Total number of lines sampled is thus
-`nlines` times `nsamples`.
-
-Parallelisation is done over `nsamples`, thus it is recommended for it to be multiple of
-number workers processes.
-
-# Arguments
-- `cluster1` : something that can be interpreted as [`Cluster`](@ref) or an Array of it
+"""AbstractClusterthing that can be interpreted as [`Cluster`](@ref) or an Array of it
 - `cluster2` : something that can be interpreted as [`Cluster`](@ref) or an Array of it
 - `calculator::Calculator` : [`Calculator`](@ref) used in sampling
 
@@ -619,8 +603,8 @@ function create_inputs(cluster1,
             )
 end
 
-function create_inputs(cluster1::AbstractCluster,
-                cluster2::AbstractCluster,
+function create_inputs(cluster1::AbstractSystem,
+                cluster2::AbstractSystem,
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
@@ -637,8 +621,8 @@ function create_inputs(cluster1::AbstractCluster,
                                   sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
 
-function create_inputs(cluster1::AbstractCluster,
-                cluster2::AbstractArray{<:AbstractCluster},
+function create_inputs(cluster1::AbstractSystem,
+                cluster2::AbstractArray{<:AbstractSystem},
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
@@ -656,8 +640,8 @@ function create_inputs(cluster1::AbstractCluster,
 end
 
 
-function create_inputs(cluster1::AbstractArray{<:AbstractCluster},
-                cluster2::AbstractCluster,
+function create_inputs(cluster1::AbstractArray{<:AbstractSystem},
+                cluster2::AbstractSystem,
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,
@@ -674,8 +658,8 @@ function create_inputs(cluster1::AbstractArray{<:AbstractCluster},
                                   sstep=sstep, startdistance=startdistance) for _ in 1:nsamples ]
 end
 
-function create_inputs(cluster1::AbstractArray{<:AbstractCluster},
-                cluster2::AbstractArray{<:AbstractCluster},
+function create_inputs(cluster1::AbstractArray{<:AbstractSystem},
+                cluster2::AbstractArray{<:AbstractSystem},
                 calculator::Calculator;
                 nlines=1,
                 nsamples=2,

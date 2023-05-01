@@ -1,5 +1,6 @@
 module Sample
 
+using AtomsBase
 using LinearAlgebra
 using ProgressMeter
 using Rotations
@@ -46,7 +47,7 @@ end
 
 
 """
-    line_sampler(cl1::Cluster, cl2::Cluster; npoints=10, mindis=2.0, maxdis=9.0)
+    line_sampler(cl1::AbstractSystem, cl2::AbstractSystem; npoints=10, mindis=2.0, maxdis=9.0)
 
 Samples cluster position in a line like fashion with even intervals.
 
@@ -57,9 +58,9 @@ Sampling is done by first generating random direction and placing `cl2` in that
 direction from `cl2` at `mindis` and then picking `npoints` in even distances
 to `maxdis`.
 """
-function line_sampler(cl1::Cluster, cl2::Cluster; npoints=10, mindis=2.0u"Å", maxdis=9.0u"Å")
-    c1 = deepcopy(cl1)
-    c2 = deepcopy(cl2)
+function line_sampler(cl1::AbstractSystem, cl2::AbstractSystem; npoints=10, mindis=2.0u"Å", maxdis=9.0u"Å")
+    c1 = Cluster(cl1)
+    c2 = Cluster(cl2)
 
     center_cluster!(c1)
     center_cluster!(c2)
@@ -78,7 +79,7 @@ end
 
 
 """
-  adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_e=0; unit="cm-1",
+  adaptive_line_sampler(cal::Calculator, cl1::AbstractSystem, cl2::AbstractSystem, max_e=0; unit="cm-1",
                npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0, pchannel=undef)
 
 Calculates potential on a line type distances that is suitable for visualization.
@@ -97,14 +98,14 @@ has energy lower than `max_e`
 - `id=""`           : extra identificaltion to help to do parallel computations
 - `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function adaptive_line_sampler(cal::Calculator, cl1::Cluster, cl2::Cluster, max_e=0u"cm^-1";
+function adaptive_line_sampler(cal::Calculator, cl1::AbstractSystem, cl2::AbstractSystem, max_e=0u"cm^-1";
                                npoints=10, maxdis=9.0u"Å", sstep=0.1, startdistance=3.0u"Å",
                                basename="base", id="", pchannel=undef)
     @debug "Starting adaptive_line_sampler"
 
     # take deepcopys so that originals are not moved
-    c1 = deepcopy(cl1)
-    c2 = deepcopy(cl2)
+    c1 = Cluster(cl1)
+    c2 = Cluster(cl2)
 
     center_cluster!(c1)
     center_cluster!(c2)
@@ -191,11 +192,11 @@ end
 Structure used to help use of adaptive line samplers
 
 # Arguments
-- `cal::Calculator`   : [`calculator`](@ref) used in calculations
-- `cl1::Cluster`      : first cluster
-- `cl2::Cluster`      : second cluster
-- `nlines`            : number of lines calculated
-- `max_e`             : maximum energy for configuration
+- `cal::Calculator`       : [`calculator`](@ref) used in calculations
+- `cl1::AbstractSystem`   : first cluster
+- `cl2::AbstractSystem`   : second cluster
+- `nlines`                : number of lines calculated
+- `max_e`                 : maximum energy for configuration
 
 # Keywords
 - `npoints`           : number of points in line
@@ -218,17 +219,17 @@ mutable struct InputAdaptiveSampler
     maxdis
     sstep
     startdistance
-    function InputAdaptiveSampler(cal::Calculator, cl1::Cluster, cl2::Cluster,
+    function InputAdaptiveSampler(cal::Calculator, cl1::AbstractSystem, cl2::AbstractSystem,
                                   nlines, max_e=0u"cm^-1";
                                   npoints=10, maxdis=9.0u"Å", sstep=0.1u"Å",
                                   startdistance=3.0u"Å")
-        new(cal, cl1, cl2, nlines, max_e,npoints,maxdis,sstep,startdistance)
+        new(cal, Cluster(cl1), Cluster(cl2), nlines, max_e,npoints,maxdis,sstep,startdistance)
     end
 end
 
 
 """
-sample_multiple_adaptive_lines(cal::Calculator, cl1::Cluster, cl2::Cluster, nlines, max_e=0;
+sample_multiple_adaptive_lines(cal::Calculator, cl1::AbstractSystem, cl2::AbstractSystem, nlines, max_e=0;
                                unit="cm-1", npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0,
                                basename="base", id="")
 
@@ -237,18 +238,20 @@ Distances are sampled in line like fashion in random directions with even distan
 Sampling of line is done with [`adaptive_line_sampler`](@ref).
 
 # Arguments
-- `cal::Calculator`   : [`calculator`](@ref) used in calculations
-- `cl1::Cluster`      : first cluster
-- `cl2::Cluster`      : second cluster
-- `nlines`            : number of lines calculated
-- `max_e=0`           : maximum energy for configuration
-- `npoints=10`        : number of points in line
-- `maxdis=9.0`        : maximum cluster distance
-- `sstep=0.1`         : search step used by [`adaptive_line_sampler`](@ref)
-- `startdistance=3.0` : distance where search is started
-- `basename="base"` : prefix for temporary files in calculations
-- `id=""`           : extra identificaltion to help to do parallel computations
-- `pchannel=undef`                : (Remote)Channel where progess information is added
+- `cal::Calculator`       : [`calculator`](@ref) used in calculations
+- `cl1::AbstractSystem`   : first cluster
+- `cl2::AbstractSystem`   : second cluster
+- `nlines`                : number of lines calculated
+- `max_e=0`               : maximum energy for configuration
+
+# Keywords
+- `npoints=10`            : number of points in line
+- `maxdis=9.0`            : maximum cluster distance
+- `sstep=0.1`             : search step used by [`adaptive_line_sampler`](@ref)
+- `startdistance=3.0`     : distance where search is started
+- `basename="base"`       : prefix for temporary files in calculations
+- `id=""`                 : extra identificaltion to help to do parallel computations
+- `pchannel=undef`        : (Remote)Channel where progess information is added
 
 # Returns
 [`Dict`](@ref) with keys
@@ -256,11 +259,11 @@ Sampling of line is done with [`adaptive_line_sampler`](@ref).
 * "Points" : array of [`Cluster`](@ref) representing points where energy was calculated
 * "Mindis" : array of minimum distances in each line
 """
-function sample_multiple_adaptive_lines(cal::Calculator, cl1::Cluster, cl2::Cluster, nlines, max_e=0u"cm^-1";
+function sample_multiple_adaptive_lines(cal::Calculator, cl1::AbstractSystem, cl2::AbstractSystem, nlines, max_e=0u"cm^-1";
                                npoints=10, maxdis=9.0u"Å", sstep=0.1u"Å", startdistance=3.0,
                                basename="base", id="", pchannel=undef)
-    c1 = deepcopy(cl1)
-    c2 = deepcopy(cl2)
+    c1 = Cluster(cl1)
+    c2 = Cluster(cl2)
     out = Vector{Dict}(undef, nlines)
     rtmp = Float64[]
     sr = startdistance

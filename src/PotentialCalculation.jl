@@ -2,6 +2,7 @@ module PotentialCalculation
 
 using Reexport
 
+@reexport using AtomsBase
 @reexport using Unitful
 @reexport using UnitfulAtomic
 

@@ -6,7 +6,6 @@ export center_cluster!
 export center_coordinates
 export Cluster
 export cluster_angle
-export ClusterNoSymbols
 export dihedral_angle
 export distances
 export move!
@@ -334,19 +333,17 @@ function Cluster(sys::AbstractSystem)
     return Cluster(hcat(pos...), a)
 end
 
-function Cluster(aarray::AbstractArray{Atom})
+function Cluster(aarray::Atom...)
     xyz = ustrip.(u"Å", hcat( position.(aarray)... ) )
     a = (AtomOnlySymbol ∘ String ∘ atomic_symbol).( collect(aarray)  )
     return Cluster(xyz, a)
 end
 
+Cluster(aarray::AbstractArray{Atom}) = Cluster(aarray...)
+
 
 function AtomsBase.FlexibleSystem(c::Cluster; kwargs...)
-    a = [
-        Symbol(c.atoms[i].id) => SVector{3}( c.xyz[:,i] .*u"Å")
-        for i in 1:length(c)
-    ]
-    return isolated_system(a; kwargs...)
+    return isolated_system(collect(c); kwargs...)
 end
 
 

@@ -20,8 +20,8 @@ formic_acid=Cluster(
  -7.2001330967      0.3718768293     -0.0703451879]',
   AtomOnlySymbol.(["C", "O", "O", "H", "H"]) )
 
-Ar = Cluster(rand(3), AtomOnlySymbol.(["Ar"]))
-N2 = Cluster([[0.0 1.0]; [0.0 0.0]; [0.0 0.0]], AtomOnlySymbol.(["N", "N"]))
+Ar = Cluster( Atom(:Ar, rand(3)u"Å"  )  )
+N2 = isolated_system( [Atom(:N, [1., 0., 0.].*u"Å"), Atom(:N, [0., 0., 0.].*u"Å")] )
 
 open(xyzname,"w") do io
     print_xyz(io, formic_acid)
