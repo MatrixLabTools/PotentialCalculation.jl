@@ -69,5 +69,5 @@ using AtomsBase
      @test haskey(fa, :e)
      cfa = Cluster(fa)
      @test all( atomic_symbol(cfa) .== atomic_symbol(formic_acid) )
-     @test all( position(cfs) .== position(formic_acid) )
+     @test all( position(cfa) .== position(formic_acid) )
 end
