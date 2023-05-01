@@ -33,30 +33,6 @@ import Base.==, Base.+
 abstract type AbstractCluster <: AbstractSystem{3} end
 abstract type AbstractClusterWithSymbols{T} <: AbstractCluster where T<:AbstractAtom end
 
-"""
-    ClusterNoSymbols <: AbstractCluster
-
-Basic cluster has only location of atoms.
-
-# Fields
-- `xyz::Array{Float64,2}` : location of atoms in 3d space, first index is x, y, z coordinate
-"""
-mutable struct ClusterNoSymbols <: AbstractCluster
-    xyz::Array{Float64,2}
-    function ClusterNoSymbols(xyz::AbstractArray{<:Real,2})
-        if size(xyz,1) != 3
-            throw(DimensionMismatch("ClusterNoSymbols - xyz has wrong dimensions"))
-        end
-        new(xyz)
-    end
-    function ClusterNoSymbols(xyz::AbstractArray{<:Real,1})
-        if length(xyz) != 3
-            throw(DimensionMismatch("ClusterNoSymbols - atoms has wrong dimensions length=$(size(xyz))"))
-        end
-        new(reshape(xyz,3,1))
-    end
-end
-
 
 """
     Cluster{T} <: AbstractClusterWithSymbols{T} where T<:AbstractAtom
@@ -111,18 +87,11 @@ function (+)(c1::Cluster{T}, c2::Cluster{T}) where T
     return Cluster(hcat(c1.xyz,c2.xyz),vcat(c1.atoms,c2.atoms))
 end
 
-function (+)(c1::ClusterNoSymbols, c2::ClusterNoSymbols)
-    return ClusterNoSymbols(hcat(c1.xyz,c2.xyz))
-end
-
 
 function (C::Cluster)(i::Int)
     return Cluster(C.xyz[:,i], [C.atoms[i]])
 end
 
-function Base.getindex(C::ClusterNoSymbols, i::Int)
-    return ClusterNoSymbols(C.xyz[:,i])
-end
 
 function Base.getindex(c::Cluster, i::Int)
     Atom( atomic_symbol(c,i), position(c,i) )
@@ -135,10 +104,6 @@ end
 
 function (C::Cluster)(i::AbstractUnitRange)
     return Cluster(C.xyz[:,i], C.atoms[i])
-end
-
-function Base.getindex(C::ClusterNoSymbols, i::AbstractUnitRange)
-    return ClusterNoSymbols(C.xyz[:,i])
 end
 
 
@@ -214,7 +179,7 @@ Unitful.uconvert(::typeof(u"Å"), r::Real) = r*u"Å"
 Moves cluster by `r`
 """
 function move!(c::AbstractCluster,r)
-    tmp = @. uconvert(u"Å", r) |> ustrip
+    tmp = ustrip.(u"Å", r)
     c.xyz .+= tmp
 end
 
@@ -338,19 +303,12 @@ end
 
 ## AtomsBase support
 
-# function Base.iterate(c::Cluster, i=0)
-#     if i < length(c)
-#         return c[i+1], i+1
-#     else
-#         return nothing
-#     end
-# end
 
 AtomsBase.species_type(::Cluster) = Atom
 
 AtomsBase.atomkeys(::Cluster) = (:atomic_symbol, :position)
 
-Base.keys(::Cluster) = (:bounding_box, :boundary_conditions)
+Base.keys(::Cluster) = ()
 
 
 function AtomsBase.bounding_box(::AbstractCluster)
@@ -366,12 +324,20 @@ function AtomsBase.boundary_conditions(::AbstractCluster)
 end
 
 
-function Cluster(sys::AtomsBase.FlexibleSystem)
+function Cluster(sys::AbstractSystem)
+    @assert :atomic_symbol in atomkeys(sys)
+    @assert :position in atomkeys(sys)
     a = AtomOnlySymbol.( atomic_symbol(sys) )
     pos = map( position(sys) ) do r
         ustrip.(u"Å", r)
     end
     return Cluster(hcat(pos...), a)
+end
+
+function Cluster(aarray::AbstractArray{Atom})
+    xyz = ustrip.(u"Å", hcat( position.(aarray)... ) )
+    a = (AtomOnlySymbol ∘ String ∘ atomic_symbol).( collect(aarray)  )
+    return Cluster(xyz, a)
 end
 
 

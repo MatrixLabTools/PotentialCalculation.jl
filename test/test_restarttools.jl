@@ -31,7 +31,7 @@ pbar=true
 
 testrestarts = false
 
-if Sys.which("orca") != nothing
+if Sys.which("orca") != nothing && Sys.which("orca_scf") != nothing
     @info "Orca binary found. Testing ORCA."
     @testset "Orca" begin
         ca = Calculator("blyp d3bj TIGHTSCF", "def2-svp", Orca())
