@@ -30,7 +30,10 @@ mp2 = Calculator(
       )
 
 # Creating argon atom
-Ar = Cluster(zeros(3), AtomOnlySymbol("Ar"))
+Ar = Cluster( Atom(:Ar, zeros(3)u"Å")  )
+# Also
+# N2 = Cluster( Atom(:N, [1., 0., 0.].*u"Å"), Atom(:N, [0., 0., 0.].*u"Å") )
+# Or any other AtomsBase compatible struct can be used
 
 # File where other molecule is taken
 trajfile="Some trajectory.xyz"
