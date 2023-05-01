@@ -15,7 +15,7 @@ using AtomsBase
      -7.2001330967      0.3718768293     -0.0703451879]',
       AtomOnlySymbol.(["C", "O", "O", "H", "H"]) )
 
-     Ar = Cluster(rand(3), AtomOnlySymbol("Ar"))
+     Ar = Cluster( Atom(:Ar, rand(3)u"Å"  )  )
 
      t1 = formic_acid[5]
      t2 = formic_acid[end]
@@ -65,9 +65,9 @@ using AtomsBase
 
      # AtomsBase 
      fa = FlexibleSystem(formic_acid)
-     pf = FlexibleSystem(formic_acid; e=1)
+     pf = FlexibleSystem(collect(formic_acid); e=1)
      @test haskey(pf, :e)
      cfa = Cluster(fa)
-     @test cfa.atoms == formic_acid.atoms
-     @test cfa.xyz == formic_acid.xyz
+     @test all( atomic_symbol(cfa) .== atomic_symbol(formic_acid) )
+     @test all( position(cfs) .== position(formic_acid) )
 end
