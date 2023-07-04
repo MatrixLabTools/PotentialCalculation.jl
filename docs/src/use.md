@@ -89,7 +89,7 @@ data3 = continue_calculation(
 ## Calculators
 
 PotentilaCalculation can use either [Orca](@ref)
-or [Psi4](@ref) as a backend for calculations.
+or [Psi4](https://github.com/MatrixLabTools/Psi4Calculator.jl) as a backend for calculations.
 
 To create ORCA calculator you can use
 
@@ -108,7 +108,8 @@ PATH is searched for orca-binary. `tmp_dir` is by default created in `$TMP`.
 For Psi4 use
 
 ```julia
-using PotentialCalculation.psi4
+using PotentialCalculation
+using Psi4Calculator
 
 Psi4(
    memory="1GiB",
@@ -116,10 +117,10 @@ Psi4(
 )
 ```
 
-You need to import Psi4 explicitly with `using PotentialCalculation.psi4`. All
-Psi4 global environmental variables are present. To access them you need to use
-`PotentialCalculation.psi4.gPsi4`-handel after using
-`PotentialCalculation.psi4.initpsi()`-function to initialize Psi4 environment.
+You need to install Psi4Calculator separately, as it has now been moved to its own package.
+All Psi4 global environmental variables are present. To access them you need to use
+`Psi4Calculator.gPsi4`-handel after using
+`Psi4Calculator.initpsi()`-function to initialize Psi4 environment.
 
 ### Adding Calculation Method and Basis Set
 
@@ -205,3 +206,5 @@ using ClusterManagers
 addprocs_slurm(number_of_processes) # ntasks option in Slurm job file
 @everywhere using PotentialCalculation
 ```
+
+Consider also using [SlurmClusterManager](https://github.com/kleinhenz/SlurmClusterManager.jl) to make things easy.

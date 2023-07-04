@@ -1,11 +1,9 @@
 using Test
-using PyCall
 
 using Distributed
 
 addprocs(2)
 @everywhere using PotentialCalculation
-@everywhere using PotentialCalculation.psi4
 
 fname = tempname() * ".jld2"
 rname = tempname() * ".jld2"
@@ -31,7 +29,7 @@ pbar=true
 
 testrestarts = false
 
-if Sys.which("orca") != nothing && Sys.which("orca_scf") != nothing
+if Sys.which("orca") !== nothing && Sys.which("orca_scf") !== nothing
     @info "Orca binary found. Testing ORCA."
     @testset "Orca" begin
         ca = Calculator("blyp d3bj TIGHTSCF", "def2-svp", Orca())
@@ -53,37 +51,6 @@ else
     @warn "Orca binary not found from PATH. Skipping tests. ORCA backend might not work!"
 end
 
-
-
-testpsi4 = true
-
-try
-    pyimport("psi4")
-catch
-    global testpsi4 = false
-    @warn "Psi4 was not detected. Skipping testing. Psi4 backend is not working!"
-end
-if  testpsi4
-    @info "Psi4 found. Testing Psi4."
-    @testset "Psi4" begin
-        ca = Calculator("blyp-d3bj", "def2-svp",Psi4(memory="1000MiB", nthreads=2))
-
-        input1=create_inputs(xyzname, Ar, ca)
-        inputs=create_inputs(xyzname, N2, ca; npoints=5)
-        inputss=create_inputs(xyzname, xyzname, ca)
-
-        data1=calculate_potential(inputs, save_file=fname, pbar=pbar)
-        data2=calculate_potential(fname,ca,save_file=sname, restart_file=rname, pbar=pbar)
-        data3=continue_calculation(rname,ca, save_file=sname, restart_file=rname, pbar=pbar)
-
-        calculate_energy(ca, N2)
-        calculate_energy(ca, [N2,N2])
-        @test all(isapprox.(data1["Energy"], data2["Energy"], atol=2E-6))
-        @test all(isapprox.(data1["Energy"], data3["Energy"], atol=2E-6))
-        @test all(isapprox.(data2["Energy"], data3["Energy"], atol=2E-6))
-    end
-    testrestarts = true
-end
 
 
 if testrestarts

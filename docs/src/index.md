@@ -13,7 +13,7 @@ experiments.
 
 - Calculate potentials with [ORCA](https://orcaforum.kofo.mpg.de) or [Psi4](http://www.psicode.org/)
 - Automatic sampling of calculation points
-- Supports parallelisation of calculation across compute nodes
+- Supports parallelization of calculation across compute nodes
 
 ### [PotentialFitting](https://github.com/MatrixLabTools/PotentialFitting.jl)
 
