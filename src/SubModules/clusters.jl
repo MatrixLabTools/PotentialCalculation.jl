@@ -233,23 +233,24 @@ end
 
 
 """
-    print_xyz(io::IO, c::AbstractClusterWithSymbols, note=""; printheader=true)
+    print_xyz(io::IO, c, note=""; printheader=true)
 
 Prints cluster in xyz file format
 
 # Arguments
 - `io::IO` : stream where writing is done
-- `c::AbstractClusterWithSymbols` : cluster that is writen
+- `c`      : `AtomsBase` compatable structure
 - `note=""` : message writen on note line
 - `printheader=true` : wheather or not header is writen (number of atoms and note)
 """
-function print_xyz(io::IO, c::AbstractClusterWithSymbols, note=""; printheader=true)
+function print_xyz(io::IO, c, note=""; printheader=true)
     if printheader
         println(io, "    ",length(c))
         println(io, note)
     end
     for i in 1:length(c)
-        println(io, c.atoms[i].id, "   ", c.xyz[1,i], "  ", c.xyz[2,i], "  ", c.xyz[3,i])
+        r = ustrip.(u"Å", position(c,i))
+        println(io, atomic_symbol(c, i), "   ", r[1], "  ", r[2], "  ", r[3])
     end
 end
 
