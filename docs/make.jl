@@ -1,5 +1,5 @@
 using Documenter
-using PotentialCalculation, PotentialCalculation.psi4
+using PotentialCalculation
 
 makedocs(sitename="PotentialCalculation.jl",
          pages=["Home" => "index.md",
