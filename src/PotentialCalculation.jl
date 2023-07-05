@@ -33,6 +33,5 @@ include("SubModules/sample.jl")
 include("SubModules/restarttools.jl")
 @reexport using .Restarttools
 
-include("SubModules/psi4.jl")
 
 end # module

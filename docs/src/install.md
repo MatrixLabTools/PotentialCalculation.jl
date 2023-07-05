@@ -9,7 +9,7 @@ pkg> add PotentialCalculation
 
 Currently there are two backends, [ORCA](https://orcaforum.kofo.mpg.de)
 and [Psi4](http://www.psicode.org/). To do any calculation, you need to have
-at least one of these installed.
+at least one of these installed. With Psi4 you need to also load [Psi4Calculator](https://github.com/MatrixLabTools/Psi4Calculator.jl)
 
 ## Testing installation
 
