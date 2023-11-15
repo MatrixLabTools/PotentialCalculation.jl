@@ -331,11 +331,11 @@ function Cluster(sys::AbstractSystem)
     pos = map( position(sys) ) do r
         ustrip.(u"Å", r)
     end
-    return Cluster(hcat(pos...), a)
+    return Cluster( reduce(hcat, pos), a)
 end
 
 function Cluster(aarray::Atom...)
-    xyz = ustrip.(u"Å", hcat( position.(aarray)... ) )
+    xyz = ustrip.(u"Å", reduce(hcat,  position.(aarray) ) )
     a = (AtomOnlySymbol ∘ String ∘ atomic_symbol).( collect(aarray)  )
     return Cluster(xyz, a)
 end
