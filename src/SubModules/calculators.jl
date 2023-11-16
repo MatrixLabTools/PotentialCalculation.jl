@@ -195,7 +195,7 @@ Calculates energy for given clusters.
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
 - `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function calculate_energy(cal::Calculator{Orca}, points; basename="base", ghost=undef, id="", pchannel=undef)
+function calculate_energy(cal::Calculator{Orca}, points; basename="base", ghost=undef, id="", pchannel=undef, use_tmpdir=true)
     clean_calculation_files(basename=basename)
     inname = "$(basename).inp"
     outname= "$(basename).out"
@@ -212,7 +212,19 @@ function calculate_energy(cal::Calculator{Orca}, points; basename="base", ghost=
         pchannel != undef && put!(pchannel,true)
         return out
     end
-    return map(x -> do_calculation(x), points)
+    dir = pwd()
+    out = nothing
+    if use_tmpdir
+        try
+            cd(cal.calculator.tmp_dir)
+            out = map(x -> do_calculation(x), points)
+        finally
+            cd(dir)
+        end
+    else
+        out = map(x -> do_calculation(x), points)
+    end
+    return out
 end
 
 
@@ -231,20 +243,39 @@ Calculates energy for given cluster.
 - `id=""` : additional information for calculator - needed for multiprocessing in same folder
 - `pchannel=undef`  : (Remote)Channel where progess information is added
 """
-function calculate_energy(cal::Calculator{Orca}, point::Cluster; basename="base", ghost=undef, id="", pchannel=undef)
+function calculate_energy(cal::Calculator{Orca}, point::Cluster; basename="base", ghost=undef, id="", pchannel=undef, use_tmpdir=true)
     clean_calculation_files(basename=basename)
     inname = "$(basename).inp"
     outname= "$(basename).out"
     cmd = pipeline(`$(cal.calculator.executable) $(inname)`, outname)
+    out = nothing
 
-    ts = time()
-    open(inname,"w") do io
-        write_input(io, cal, point, ghost=ghost)
+    if use_tmpdir
+        dir = pwd()
+        try
+            cd(cal.calculator.tmp_dir)
+            ts = time()
+            open(inname,"w") do io
+                write_input(io, cal, point, ghost=ghost)
+            end
+            run(cmd)
+            out = read_energy(outname)
+            te = time()
+            @debug "Calculation done in $(round(te-ts, digits=1)) seconds"
+        finally
+            cd(dir)
+        end
+    else
+        ts = time()
+        open(inname,"w") do io
+            write_input(io, cal, point, ghost=ghost)
+        end
+        run(cmd)
+        out = read_energy(outname)
+        te = time()
+        @debug "Calculation done in $(round(te-ts, digits=1)) seconds"
     end
-    run(cmd)
-    out = read_energy(outname)
-    te = time()
-    @debug "Calculation done in $(round(te-ts, digits=1)) seconds"
+   
     pchannel != undef && put!(pchannel,true)
     return out
 end
@@ -272,8 +303,21 @@ function bsse_corrected_energy(cal::Calculator{Orca}, c1, c2; basename="base", i
     e = calculate_energy(cal, points, basename=basename, id=id, pchannel=pchannel)
     l1 = length(c1[1])
     l2 = length(c2[1]) + l1
-    bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id, pchannel=pchannel)
-    bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id, pchannel=pchannel)
+    dir = pwd()
+    bsse1 = nothing
+    bsse2 = nothing
+    e = nothing
+    try
+        cd(cal.calculator.tmp_dir)
+        e = calculate_energy(cal, points, basename=basename, id=id, pchannel=pchannel)
+        l1 = length(c1[1])
+        l2 = length(c2[1]) + l1
+        bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id, pchannel=pchannel, use_tmpdir=false)
+        bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id, pchannel=pchannel, use_tmpdir=false)
+    finally
+        cd(dir)
+    end
+    
     return e .- bsse1 .- bsse2
 end
 
@@ -296,11 +340,21 @@ function bsse_corrected_energy(cal::Calculator{Orca}, c1::Cluster, c2::Cluster;
                                basename="base", id="", pchannel=undef)
     # expects ORCA calculator
     points = c1 + c2
-    e = calculate_energy(cal, points, basename=basename, id=id, pchannel=pchannel)
-    l1 = length(c1)
-    l2 = length(c2) + l1
-    bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id, pchannel=pchannel)
-    bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id, pchannel=pchannel)
+    e = nothing
+    bsse1 = nothing
+    bsse2 = nothing
+    dir = pwd()
+    try
+        cd(cal.calculator.tmp_dir)
+        e = calculate_energy(cal, points, basename=basename, id=id, pchannel=pchannel)
+        l1 = length(c1)
+        l2 = length(c2) + l1
+        bsse1 = calculate_energy(cal, points, basename=basename, ghost=1:l1, id=id, pchannel=pchannel)
+        bsse2 = calculate_energy(cal, points, basename=basename, ghost=(l1+1):l2, id=id, pchannel=pchannel)
+    finally
+        cd(dir)
+    end
+    
     return e .- bsse1 .- bsse2
 end
 
