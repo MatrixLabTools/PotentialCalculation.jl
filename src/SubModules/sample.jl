@@ -78,7 +78,23 @@ function line_sampler(cl1::AbstractSystem, cl2::AbstractSystem; npoints=10, mind
      return _line_sampler(c1,c2,u,step,npoints)
 end
 
+"""
+    random_sampler -> Dict
 
+Samples random points in a line
+
+# Arguments
+- `cal::Calculator`      : calculator for the calculation
+- `cl1::AbstractSystem`  : cluster1 to that is not moved
+- `cl2::AbstractSystem`  : cluster2 that is moved
+
+# kwargs
+- `npoints=5`                :  number of points sampled
+- `start_distance=3.0u"Å"`   :  start position for the search
+- `max_move=5.0u"Å"`         :  maximum distance from the initial point
+- `max_energy=100u"cm^-1"`   :  maximum allowed energy
+- `move_step=0.1u"Å"`        :  move step when searching initial spot
+"""
 function random_sampler(
     cal::Calculator,
     cl1::AbstractSystem,
@@ -87,7 +103,7 @@ function random_sampler(
     start_distance=3.0u"Å", 
     max_move=5.0u"Å", 
     max_energy=100u"cm^-1",
-    move_step=0.2u"Å",
+    move_step=0.1u"Å",
     basename="base", id="", pchannel=undef,  # these are for calculator
 )
     c1, c2, e = _get_initial_points(cal, cl1, cl2, max_energy;
@@ -110,8 +126,7 @@ function random_sampler(
     p = map( out ) do x
         c1 + x.c2
     end
-    cluster1 = repeat([c1], npoints)
-    cluster2 = [  x.c2 for x in out ]
+
     eout = map( out ) do x
         x.energy
     end
@@ -120,6 +135,45 @@ function random_sampler(
         "Energy" => eout, 
         "Points" =>  p,  
         "Mindis" =>  minimum(d),
+        "cluster1" => c1,
+        "cluster2" => c2
+    )
+end
+
+function random_sampler(
+    cal::Calculator,
+    cl1::AbstractArray{<:AbstractSystem},
+    cl2::AbstractArray{<:AbstractSystem},
+    number_of_samples; 
+    npoints=5, 
+    start_distance=3.0u"Å", 
+    max_move=5.0u"Å", 
+    max_energy=100u"cm^-1",
+    move_step=0.1u"Å",
+    basename="base", id="", pchannel=undef,  # these are for calculator
+)
+    tmp = map(1:number_of_samples) do _
+        random_sampler(
+            cal, 
+            rand(cl1), 
+            rand(cl2); 
+            npoints=npoints, 
+            start_distance=start_distance, 
+            max_move=max_move, 
+            max_energy=max_energy,
+            move_step=move_step,
+            basename=basename, id=id, pchannel=pchannel
+        )
+    end
+    energy = reduce(hcat, [ x["Energy"] for x in tmp ] )
+    cluster1 = tmp[end]["cluster1"]
+    cluster2 = tmp[end]["cluster2"]
+    points = reduce(hcat, [ x["Points"] for x in tmp ] )
+    mindis = [ x["Mindis"] for x in tmp ]
+    return Dict(
+        "Energy" => energy, 
+        "Points" =>  points,  
+        "Mindis" =>  mindis,
         "cluster1" => cluster1,
         "cluster2" => cluster2
     )
@@ -343,12 +397,12 @@ function sample_multiple_adaptive_lines(cal::Calculator, cl1::AbstractSystem, cl
         tmp = adaptive_line_sampler(cal, c1, c2, max_e; npoints=npoints,
                                     maxdis=maxdis, startdistance=sr, basename=basename,
                                      id=id, pchannel=pchannel, sstep=sstep)
-        push!(rtmp, (ustrip ∘ uconvert)(u"Å", tmp["Mindis"] ))
+        push!(rtmp, ustrip(u"Å", tmp["Mindis"] ))
         sr = sum(rtmp) / length(rtmp)
         out[i] = tmp
     end
-    energy = hcat(map( x -> x["Energy"], out)...)
-    points = hcat(map( x -> x["Points"], out)...)
+    energy = reduce(hcat, map( x -> x["Energy"], out) )
+    points = reduce(hcat, map( x -> x["Points"], out) )
     mindis = map(x -> x["Mindis"], out)
     return Dict("Energy" => energy, "Points" => points, "Mindis" => mindis)
 end
