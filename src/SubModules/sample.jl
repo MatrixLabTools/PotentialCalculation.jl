@@ -110,11 +110,19 @@ function random_sampler(
     p = map( out ) do x
         c1 + x.c2
     end
+    cluster1 = repeat([c1], npoints)
+    cluster2 = [  x.c2 for x in out ]
     eout = map( out ) do x
         x.energy
     end
 
-    return Dict("Energy" => eout, "Points" =>  p,  "Mindis" =>  minimum(d))
+    return Dict(
+        "Energy" => eout, 
+        "Points" =>  p,  
+        "Mindis" =>  minimum(d),
+        "cluster1" => cluster1,
+        "cluster2" => cluster2
+    )
 end
 
 
