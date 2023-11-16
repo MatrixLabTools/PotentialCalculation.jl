@@ -14,6 +14,7 @@ using ..UnitConversions
 export adaptive_line_sampler
 export InputAdaptiveSampler
 export line_sampler
+export random_sampler
 export sample_multiple_adaptive_lines
 
 
@@ -78,6 +79,121 @@ function line_sampler(cl1::AbstractSystem, cl2::AbstractSystem; npoints=10, mind
 end
 
 
+function random_sampler(
+    cal::Calculator,
+    cl1::AbstractSystem,
+    cl2::AbstractSystem; 
+    npoints=5, 
+    start_distance=3.0u"Å", 
+    max_move=5.0u"Å", 
+    max_energy=100u"cm^-1",
+    move_step=0.2u"Å",
+    basename="base", id="", pchannel=undef,  # these are for calculator
+)
+    c1, c2, e = _get_initial_points(cal, cl1, cl2, max_energy;
+      start_distance = start_distance,
+      move_step = move_step,
+      basename=basename, id=id, pchannel=pchannel,
+    )
+    u = [1., 0., 0.] # move direction
+    r = max_move*rand(npoints) |> sort
+
+    out = map( r ) do Δr
+        tmp = deepcopy(c2)
+        move!(tmp, Δr * u)
+        e = bsse_corrected_energy(cal, [c1], [tmp], basename=basename, id=id, pchannel=pchannel)
+        (; :energy=>e, :c2=>tmp)
+    end
+    d = map( out ) do x
+        minimum(distances(c1, x.c2))
+    end
+    p = map( out ) do x
+        c1 + x.c2
+    end
+    eout = map( out ) do x
+        x.energy
+    end
+
+    return Dict("Energy" => eout, "Points" =>  p,  "Mindis" =>  minimum(d))
+end
+
+
+function _get_initial_points(
+    cal::Calculator, 
+    cl1::AbstractSystem, 
+    cl2::AbstractSystem, 
+    max_energy=0u"cm^-1";
+    move_step=0.1u"Å", 
+    start_distance=4.0u"Å",
+    basename="base", id="", pchannel=undef,  # these are for calculator
+)
+    # take deepcopys so that originals are not moved
+    c1 = Cluster(cl1)
+    c2 = Cluster(cl2)
+
+    center_cluster!(c1)
+    center_cluster!(c2)
+
+    # Rotate so that we get random orientation
+    rotate_randomly!(c1)
+    rotate_randomly!(c2)
+
+    # We move the clusters in x-direction
+    u = [1.0, 0.0, 0.0]
+
+    # Find good initial point for the search
+    # TODO make this more robust
+    r = 0.5*start_distance
+    move!(c2, 0.5*start_distance*u)
+    while minimum(distances(c1,c2)) < start_distance
+        move!(c2, move_step * u)
+        r += move_step
+    end
+
+    # Search for the intial point
+    # We need to find a point where potential energy is emax
+    # To do this we find the most distant point where energy is more than emax
+    # and the closest point where energy is less than e
+    emax = energy_from(max_energy)
+    Δe = bsse_corrected_energy(cal, [c1], [c2], basename=basename, id=id, pchannel=pchannel) .- emax
+    ctemp = [deepcopy(c2)] # History for points we tried
+    fless = false # We have a point where Δe < 0
+    fmore = false # We have a point where Δe > 0
+    if Δe[1] > 0
+        fmore = true
+    else
+        fless = true
+    end
+    while fmore == false || fless == false
+        if Δe[end] < 0
+            move!(c2, -1*move_step*u)
+            r -= move_step
+        else
+            move!(c2, move_step*u)
+            r += move_step
+        end
+        tmp = bsse_corrected_energy(cal, [c1], [c2], basename=basename, id=id, pchannel=pchannel) .- emax
+        push!(Δe,  tmp...)
+        push!(ctemp, deepcopy(c2))
+        if Δe[end] > 0
+            fmore = true
+        else
+            fless = true
+        end
+    end
+    if length(Δe) == 1
+        error("Search fail!")
+    end
+
+    c2_out = ctemp[Δe.<0][end]
+    return (;
+        :c1 => c1,
+        :c2 => c2_out,
+        :e => Δe[Δe.<0][end] + emax
+    )
+end
+
+
 """
   adaptive_line_sampler(cal::Calculator, cl1::AbstractSystem, cl2::AbstractSystem, max_e=0; unit="cm-1",
                npoints=10, maxdis=9.0, sstep=0.1, startdistance=3.0, pchannel=undef)
@@ -103,68 +219,16 @@ function adaptive_line_sampler(cal::Calculator, cl1::AbstractSystem, cl2::Abstra
                                basename="base", id="", pchannel=undef)
     @debug "Starting adaptive_line_sampler"
 
-    # take deepcopys so that originals are not moved
-    c1 = Cluster(cl1)
-    c2 = Cluster(cl2)
-
-    center_cluster!(c1)
-    center_cluster!(c2)
-
-    # Rotate so that we get random orientation
-    rotate_randomly!(c1)
-    rotate_randomly!(c2)
-
-    # We move the clusters in x-direction
-    u = [1.0, 0.0, 0.0]
-
-    # Find good initial point for the search
-    # TODO make this more robust
-    r = 0.5*startdistance
-    move!(c2, 0.5*startdistance*u)
-    while minimum(distances(c1,c2)) < startdistance
-        move!(c2, sstep * u)
-        r += sstep
-    end
-
-    # Search for the intial point
-    # We need to find a point where potential energy is emax
-    # To do this we find the most distant point where energy is more than emax
-    # and the closest point where energy is less than e
-    emax = energy_from(max_e)
-    Δe = bsse_corrected_energy(cal, [c1], [c2], basename=basename, id=id, pchannel=pchannel) .- emax
-    ctemp = [deepcopy(c2)] # History for points we tried
-    fless = false # We have a point where Δe < 0
-    fmore = false # We have a point where Δe > 0
-    if Δe[1] > 0
-        fmore = true
-    else
-        fless = true
-    end
-    while fmore == false || fless == false
-        if Δe[end] < 0
-            move!(c2, -1*sstep*u)
-            r -= sstep
-        else
-            move!(c2, sstep*u)
-            r += sstep
-        end
-        tmp = bsse_corrected_energy(cal, [c1], [c2], basename=basename, id=id, pchannel=pchannel) .- emax
-        push!(Δe,  tmp...)
-        push!(ctemp, deepcopy(c2))
-        if Δe[end] > 0
-            fmore = true
-        else
-            fless = true
-        end
-    end
-    if length(Δe) == 1
-        error("Search fail!")
-    end
+    c1, c2, e = _get_initial_points(cal, cl1, cl2, max_e;
+        start_distance = startdistance,
+        move_step = sstep,
+        basename=basename, id=id, pchannel=pchannel,
+    )
+    u = [1., 0., 0.] # move direction
 
     # Pretare output and perform some checks
-    @debug "adaptive_line_sampler found initial point in $(length(e)) steps"
-    out2 = [ctemp[Δe.<0][end]] # We take the closest point where e < emax
-    eout = [Δe[Δe.<0][end] + emax] # Calculated potential energy
+    out2 = [c2] # We take the closest point where e < emax
+    eout = [e] # Calculated potential energy
     out1 = [c1]  # cluster1 coordinates
     c2 = deepcopy(out2[1])
     rr = minimum(distances(c1,c2))
