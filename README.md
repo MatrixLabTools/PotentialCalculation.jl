@@ -18,7 +18,7 @@ and [Psi4](http://www.psicode.org/).
 
 Hit "]" to enter "pkg>"
 ```julia
-pkg> add registry add https://github.com/MatrixLabTools/PackageRegistry
+pkg> registry add https://github.com/MatrixLabTools/PackageRegistry
 pkg> add PotentialCalculation
 ```
 
